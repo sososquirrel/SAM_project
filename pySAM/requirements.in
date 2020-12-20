@@ -1,0 +1,11 @@
+# dev
+pytest
+pytest-cov
+flake8
+
+# prod
+pandas
+numpy
+xarray
+matplotlib
+scipy
