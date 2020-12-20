@@ -6,7 +6,7 @@ from netcdf4 import Dataset
 
 
 class Simulation:
-	def __init__(self, 'run'=run, 'velocity'=velocity, 'depth_shear'=depth_shear):
+	def __init__(self, run=run, velocity=velocity, depth_shear=depth_shear):
 		
 		self.velocity = velocity
 		self.depth_shear = depth_shear
