@@ -1,1 +1,3 @@
-print("c est tout bon trist")
+"pysam"
+
+from pySAM.config import *
