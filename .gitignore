@@ -145,4 +145,5 @@ dmypy.json
 
 ### Folders
 **/data/*
+**/dev_notebooks/
 
