@@ -1,6 +1,6 @@
 """huk"""
 
-# import numpy as np
+import numpy as np
 from multiprocess import Pool
 
 
