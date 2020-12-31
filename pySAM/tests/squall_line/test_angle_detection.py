@@ -1,10 +1,11 @@
 import numpy as np
 import pySAM
 import pytest
+from pySAM.squall_line.angle_detection import multivariate_gaussian
 
 
 def test_multivariate_gaussian():
-	im = np.ones((100, 100))
+    im = np.ones((100, 100))
     im[0, 6] = 18
     N = im.shape[0]
     M = im.shape[1]
