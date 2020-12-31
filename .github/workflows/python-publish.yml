@@ -36,5 +36,7 @@ jobs:
         cd pySAM
         pylint pySAM
     - name: Test with pytest
+      env:
+        PYTHONPATH: "."
       run: |
-        pytest
+        python -m pytest
