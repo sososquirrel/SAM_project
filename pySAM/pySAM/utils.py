@@ -1,6 +1,6 @@
-import time
+"""huk"""
 
-import numpy as np
+# import numpy as np
 from multiprocess import Pool
 
 
@@ -37,8 +37,6 @@ def make_parallel(function, nprocesses):
         ]
         processes_pool.close()
         return [r.get() for r in result]
-
-    return apply
 
     # [p.apply_async(function, args=[value] + args, kwds=kwargs) for value in iterable_values]
     # p.close()

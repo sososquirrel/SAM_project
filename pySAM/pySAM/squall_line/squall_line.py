@@ -1,3 +1,5 @@
+"""Definition of squall line class"""
+
 import numpy as np
 import pySAM
 from pySAM.squall_line.angle_detection import multi_angle_instant_convolution
@@ -5,6 +7,18 @@ from pySAM.utils import make_parallel
 
 
 class SquallLine:
+
+    """Summary
+
+    Attributes:
+        distribution_angles (TYPE): Description
+        PRECi (TYPE): Description
+        PW (TYPE): Description
+        U (TYPE): Description
+        V (TYPE): Description
+        W (TYPE): Description
+    """
+
     def __init__(
         self,
         precipitable_water,

@@ -1,3 +1,5 @@
+"""Base functions for angle detection"""
+
 import numpy as np
 from scipy import signal
 

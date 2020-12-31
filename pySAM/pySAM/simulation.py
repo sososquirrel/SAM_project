@@ -1,4 +1,6 @@
-import numpy as numpy
+"""coucou"""
+
+import numpy as np
 import pySAM
 import xarray as xr
 from pySAM.squall_line.squall_line import SquallLine
@@ -7,21 +9,41 @@ print(pySAM.PI)
 
 
 class Simulation:
-    def __init__(self, base_path, run, velocity, depth_shear):
+
+    """Summary
+
+    Attributes:
+        dataset_1d (TYPE): DescriphuihdziuhEIUDHUZItion
+        dataset_2d (TYPE): Description
+        dataset_3d (TYPE): Description
+
+        depth_shear (TYPE): Description
+        path_field_1d (TYPE): Description
+        path_field_2d (TYPE): Description
+        path_field_3d (TYPE): Description
+        squall_line (TYPE): Description
+        velocity (TYPE): Description
+
+    Deleted Attributes:
+        run (TYPE): Description
+    """
+
+    def __init__(self, data_folder_path: str, run: str, velocity: str, depth_shear: str):
+        """Init"""
 
         self.run = run
         self.velocity = velocity
         self.depth_shear = depth_shear
 
-        # base_path = "/Users/sophieabramian/Desktop/SAM_project/data"
+        # data_folder_path = "/Users/sophieabramian/Desktop/SAM_project/data"
         self.path_field_1d = (
-            base_path + f"/{self.run}/1D_FILES/U{self.velocity}_H{self.depth_shear}"
+            data_folder_path + f"/{self.run}/1D_FILES/U{self.velocity}_H{self.depth_shear}"
         )
         self.path_field_2d = (
-            base_path + f"{self.run}/2D_FILES/U{self.velocity}_H{self.depth_shear}"
+            data_folder_path + f"{self.run}/2D_FILES/U{self.velocity}_H{self.depth_shear}"
         )
         self.path_field_3d = (
-            base_path + f"{self.run}/3D_FILES/U{self.velocity}_H{self.depth_shear}"
+            data_folder_path + f"{self.run}/3D_FILES/U{self.velocity}_H{self.depth_shear}"
         )
 
         self.dataset_1d = xr.open_dataset(self.path_field_1d, decode_cf=False, autoclose=True)
