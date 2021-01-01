@@ -137,7 +137,6 @@ dmypy.json
 **/*.jpg
 **/*.jpeg
 **/*.nc
-**/*.txt
 **/*.rtf
 **/*.pdf
 
