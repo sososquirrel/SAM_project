@@ -37,4 +37,6 @@ jobs:
         pylint pySAM
     - name: Test with pytest
       run: |
+        echo "Inside group"
+        echo pytest --version
         python -m pytest
