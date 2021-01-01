@@ -9,3 +9,4 @@ numpy
 xarray
 matplotlib
 scipy
+multiprocess
