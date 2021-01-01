@@ -7,11 +7,13 @@
 attrs==20.3.0             # via pytest
 coverage==5.3             # via pytest-cov
 cycler==0.10.0            # via matplotlib
+dill==0.3.3               # via multiprocess
 flake8==3.8.4             # via -r requirements.in
 iniconfig==1.1.1          # via pytest
 kiwisolver==1.3.1         # via matplotlib
 matplotlib==3.3.3         # via -r requirements.in
 mccabe==0.6.1             # via flake8
+multiprocess==0.70.11.1   # via -r requirements.in
 numpy==1.19.4             # via -r requirements.in, matplotlib, pandas, scipy, xarray
 packaging==20.8           # via pytest
 pandas==1.1.5             # via -r requirements.in, xarray
