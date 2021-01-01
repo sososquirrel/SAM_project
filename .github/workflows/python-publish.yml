@@ -37,4 +37,6 @@ jobs:
       env:
         PYTHONPATH: "./pySAM/"
       run: |
-        python -m pytest
+        echo $PWD
+        python -c "import sys; print(sys.path)"
+        pytest
