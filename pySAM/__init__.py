@@ -2,4 +2,4 @@
 
 import os
 
-from config import *  # import constants
+from pySAM.config import *  # import constants
