@@ -7,7 +7,7 @@ dummy_data = np.random.random((3, 10, 10))
 
 
 def test_set_distribution_angles():
-    squall_line = SquallLine(dummy_data, dummy_data, dummy_data, dummy_data, dummy_data)
+    squall_line = SquallLine(dummy_data, dummy_data, dummy_data, dummy_data)
 
     with pytest.raises(ValueError) as e:
         squall_line.set_distribution_angles(
@@ -16,7 +16,7 @@ def test_set_distribution_angles():
             mu=np.array([0, 0]),
             sigma=np.array([[1.0, -0.985], [-0.985, 1.0]]),
         )
-    assert "data name must be in [PW, PRECi, U, V, W]" in str(e)
+    assert "data name must be in [PW, PRECi, U, W]" in str(e)
 
     with pytest.raises(ValueError) as e:
         squall_line.set_distribution_angles(

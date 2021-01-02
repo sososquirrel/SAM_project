@@ -21,6 +21,7 @@ class Simulation:
         path_field_1d (TYPE): Description
         path_field_2d (TYPE): Description
         path_field_3d (TYPE): Description
+        run (TYPE): Description
         squall_line (TYPE): Description
         velocity (TYPE): Description
 
@@ -28,7 +29,7 @@ class Simulation:
         run (TYPE): Description
     """
 
-    def __init__(self, data_folder_path: str, run: str, velocity: str, depth_shear: str):
+    def __init__(self, run: str, velocity: str, depth_shear: str):
         """Init"""
 
         self.run = run
@@ -37,13 +38,16 @@ class Simulation:
 
         # data_folder_path = "/Users/sophieabramian/Desktop/SAM_project/data"
         self.path_field_1d = (
-            data_folder_path + f"/{self.run}/1D_FILES/U{self.velocity}_H{self.depth_shear}"
+            pySAM.DATA_FOLDER_PATH
+            + f"{self.run}/1D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_{self.run}.nc"
         )
         self.path_field_2d = (
-            data_folder_path + f"{self.run}/2D_FILES/U{self.velocity}_H{self.depth_shear}"
+            pySAM.DATA_FOLDER_PATH
+            + f"/{self.run}/2D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64.2Dcom_1_{self.run}.nc"
         )
         self.path_field_3d = (
-            data_folder_path + f"{self.run}/3D_FILES/U{self.velocity}_H{self.depth_shear}"
+            pySAM.DATA_FOLDER_PATH
+            + f"{self.run}/3D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64_0000302400.com3D.alltimes_{self.run}.nc"
         )
 
         self.dataset_1d = xr.open_dataset(self.path_field_1d, decode_cf=False, autoclose=True)
@@ -58,6 +62,6 @@ class Simulation:
             precipitable_water=self.dataset_2d.PW,
             instantaneous_precipitation=self.dataset_2d.PRECi,
             x_velocity=self.dataset_3d.U,
-            y_velocity=self.dataset_3d.V,
+            # y_velocity=self.dataset_3d.V,
             z_velocity=self.dataset_3d.W,
         )

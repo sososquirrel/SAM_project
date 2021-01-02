@@ -24,13 +24,11 @@ class SquallLine:
         precipitable_water,
         instantaneous_precipitation,
         x_velocity,
-        y_velocity,
         z_velocity,
     ):
         self.PW = precipitable_water
         self.PRECi = instantaneous_precipitation
         self.U = x_velocity
-        self.V = y_velocity
         self.W = z_velocity
 
         self.distribution_angles = None
@@ -53,8 +51,8 @@ class SquallLine:
             parallelize (bool, optional): Use multiprocessing to dispatch tasks over available CPUs
         """
 
-        if data_name not in ["PW", "PRECi", "U", "V", "W"]:
-            raise ValueError("data name must be in [PW, PRECi, U, V, W]")
+        if data_name not in ["PW", "PRECi", "U", "W"]:
+            raise ValueError("data name must be in [PW, PRECi, U, W]")
         if len(angles_range.shape) != 1:
             raise ValueError("angles_range must be 1D")
 
