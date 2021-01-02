@@ -32,6 +32,7 @@ class SquallLine:
         self.W = z_velocity
 
         self.distribution_angles = None
+        self.angle_degrees = None
 
     def set_distribution_angles(
         self,

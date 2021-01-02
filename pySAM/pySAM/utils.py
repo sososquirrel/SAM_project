@@ -61,7 +61,16 @@ def make_parallel(function, nprocesses):
 def expand_array_to_tzyx_array(
     time_dependence: bool, input_array: np.array, final_shape: np.array
 ) -> np.array:
+    """Get a (nt,nz,ny,nx) array form a (nt,nz) array
+    It makes data get volumic
 
+    It works also if the data only depends on z
+
+    Args:
+        time_dependence (bool): True if the data is of shape of (nt,nz), False if shape=(nz)
+        input_array (np.array): the array you want to extend
+        final_shape (np.array): dimension of your willing array, must be (nt,nz,ny,nx) in this order
+    """
     if len(final_shape) != 4:
         raise ValueError("Output must be (t,z,y,x) type")
 

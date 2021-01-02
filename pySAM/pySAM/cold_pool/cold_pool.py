@@ -61,7 +61,10 @@ class ColdPool:
         self.set_basic_variables_from_dataset()
 
     def set_basic_variables_from_dataset(self):
+        """Compute basic variables from dataset variable
 
+        One must care of dataset variable shape, here it is adapted to (nt,nz,ny,nx) data
+        """
         z_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
             time_dependence=False,
             input_array=self.Z.values,
@@ -104,7 +107,17 @@ class ColdPool:
         y_margin: int = None,
         parallelize: bool = True,
     ) -> np.array:
+        """Compute the composite, namely the mean over extreme events, of 2d or 3d variables evolving in time
+        This method build attribute
 
+        Args:
+            data_name (str): name of the variable composite method is applying to
+            variable_to_look_for_extreme (str): name of the variable that describe extreme event
+            extreme_events_choice (str): max 1-percentile or 10-percentile
+            x_margin (int): width of window zoom
+            y_margin (int, optional): depth of window zoom
+            parallelize (bool, optional): use all your cpu power
+        """
         if data_name not in ["W", "QN", "VORTICITY", "BUOYANCY"]:
             raise ValueError("data name must be in [W, QN, VORTICITY, BUOYANCY]")
         if variable_to_look_for_extreme not in ["PRECi"]:

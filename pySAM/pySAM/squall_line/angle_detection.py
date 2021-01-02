@@ -144,7 +144,6 @@ def multi_angle_instant_convolution(
     convolution_values = []
 
     for theta in theta_range:
-        c = time.time()
         convolution_values.append(
             convolution_with_gaussian(
                 autocorrelation_image=autocorrelation_image, theta=theta, mu=mu, sigma=sigma
