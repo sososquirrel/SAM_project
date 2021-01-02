@@ -12,12 +12,12 @@ dummy_data_2d = np.random.random((6, 7))
 def test_extract_circular_block():
 
     with pytest.raises(ValueError) as e:
-        extract_circular_block(dummy_data_3d, 3, 1)
-    assert "3D data requires y_index_middle and y_margin" in str(e)
+        extract_circular_block(dummy_data_3d, np.array([3]), 1)
+    assert "3D data requires y_index_middle_array and y_margin" in str(e)
 
     with pytest.raises(ValueError) as e:
-        extract_circular_block(dummy_data_2d, 3, 1, 2, 1)
-    assert "no y_index_middle and y_margin for 2D data" in str(e)
+        extract_circular_block(dummy_data_2d, np.array([3]), 1, np.array([2]), 1)
+    assert "no y_index_middle_array and y_margin for 2D data" in str(e)
 
     # extract_circular_block(dummy_data_3d, 3, 1, 2, 5)
     # extract_circular_block(dummy_data_2d, 3, 1)

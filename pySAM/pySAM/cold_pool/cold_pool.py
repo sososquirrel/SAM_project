@@ -41,5 +41,5 @@ class ColdPool:
         self.Y = y_positions
         self.Z = z_positions
         self.U = x_velocity
-        self.W = z_x_velocity
+        self.W = z_velocity
         self.QN = cloud_base

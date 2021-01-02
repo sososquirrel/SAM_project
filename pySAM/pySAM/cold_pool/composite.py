@@ -27,7 +27,7 @@ def extract_circular_block(
 
         extracted_data = []
 
-        for x_index_middle, y_index_middle in zip(x_index_middle_list, y_index_middle_list):
+        for x_index_middle, y_index_middle in zip(x_index_middle_array, y_index_middle_array):
             extracted_data.append(
                 concatenated_data_xy[
                     nx + x_index_middle - x_margin : nx + x_index_middle + x_margin,
@@ -40,7 +40,7 @@ def extract_circular_block(
         nx, nz = data.shape
 
         extracted_data = []
-        for x_index_middle in x_index_middle_list:
+        for x_index_middle in x_index_middle_array:
             extracted_data.append(
                 concatenated_data_x[
                     nx + x_index_middle - x_margin : nx + x_index_middle + x_margin
