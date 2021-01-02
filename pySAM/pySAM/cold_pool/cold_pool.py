@@ -2,7 +2,7 @@
 
 import numpy as np
 import pySAM
-from pySAM.cold_pool.composite import instant_extraction_data_over_extreme
+from pySAM.cold_pool.composite import instant_mean_extraction_data_over_extreme
 from pySAM.utils import make_parallel
 
 
@@ -112,12 +112,11 @@ class ColdPool:
 
         if parallelize:
             parallel_composite = make_parallel(
-                function=instant_extraction_data_over_extreme, nprocesses=pySAM.N_CPU
+                function=instant_mean_extraction_data_over_extreme, nprocesses=pySAM.N_CPU
             )
-            print("hgjhhjhjjhjkhjk", getattr(self, data_name).values.shape)
             composite_variable = parallel_composite(
-                iterable_values=getattr(self, data_name),
-                variable_to_look_for_extreme=getattr(self, variable_to_look_for_extreme),
+                iterable_values_1=getattr(self, data_name),
+                iterable_values_2=getattr(self, variable_to_look_for_extreme),
                 extreme_events_choice=extreme_events_choice,
                 x_margin=x_margin,
                 y_margin=y_margin,
@@ -126,15 +125,18 @@ class ColdPool:
         else:  # NO PARALLELIZATION
             composite_variable = []
             data = getattr(self, data_name)
-            for image in data:
+            variable_to_look_for_extreme = getattr(self, variable_to_look_for_extreme).values
+            for image, variable_extreme in zip(data, variable_to_look_for_extreme):
                 composite_variable.append(
-                    instant_extraction_data_over_extreme(
+                    instant_mean_extraction_data_over_extreme(
                         data=image,
-                        variable_to_look_for_extreme=getattr(
-                            self, variable_to_look_for_extreme
-                        ),
+                        variable_to_look_for_extreme=variable_extreme,
                         extreme_events_choice=extreme_events_choice,
                         x_margin=x_margin,
                         y_margin=y_margin,
                     )
                 )
+        composite_variable = np.array(composite_variable)
+        composite_variable = np.mean(composite_variable, axis=0)
+
+        setattr(self, data_name + "_composite", composite_variable)

@@ -28,13 +28,27 @@ def make_parallel(function, nprocesses):
 
     """
 
-    def apply(iterable_values, *args, **kwargs):
+    def apply(
+        iterable_values_1,
+        iterable_values_2=None,
+        *args,
+        **kwargs,
+    ):
         args = list(args)
         processes_pool = Pool(nprocesses)
-        result = [
-            processes_pool.apply_async(function, args=[value] + args, kwds=kwargs)
-            for value in iterable_values
-        ]
+
+        if iterable_values_2 is not None:
+            result = [
+                processes_pool.apply_async(function, args=[value1, value2] + args, kwds=kwargs)
+                for (value1, value2) in zip(iterable_values_1, iterable_values_2)
+            ]
+
+        if iterable_values_2 is None:
+            result = [
+                processes_pool.apply_async(function, args=[value1] + args, kwds=kwargs)
+                for value1 in iterable_values_1
+            ]
+
         processes_pool.close()
         return [r.get() for r in result]
 

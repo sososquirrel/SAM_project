@@ -29,5 +29,6 @@ MIXING_RATIO_AIR_WATER_VAPOR = 0.622  # (%)
 
 
 # squall line parameters
+THETA_ARRAY = np.linspace(0, np.pi, 50)
 MU_GAUSSIAN = np.array([0.0, 0.0])
 SIGMA_GAUSSIAN = np.array([[1.0, -0.985], [-0.985, 1.0]])

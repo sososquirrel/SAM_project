@@ -62,7 +62,7 @@ class SquallLine:
             )
 
             angles_distribution = parallel_multi_angle(
-                iterable_values=getattr(self, data_name),
+                iterable_values_1=getattr(self, data_name),
                 theta_range=angles_range,
                 mu=mu,
                 sigma=sigma,
@@ -78,4 +78,15 @@ class SquallLine:
                     )
                 )
 
-        self.distribution_angles = np.array(angles_distribution)
+        self.distribution_angles = np.mean(np.array(angles_distribution), axis=0)
+
+        self.angle_degrees = (
+            (
+                angles_range[
+                    np.where(self.distribution_angles == np.max(self.distribution_angles))[0]
+                ]
+                - np.pi / 2
+            )
+            * 180
+            / np.pi
+        )

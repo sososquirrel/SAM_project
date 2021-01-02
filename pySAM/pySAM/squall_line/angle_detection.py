@@ -139,10 +139,7 @@ def multi_angle_instant_convolution(
     Returns:
         np.array: array of convolutions for multiple angles
     """
-    a = time.time()
     autocorrelation_image = normalized_autocorrelation(image)
-    b = time.time()
-    print(b - a)
 
     convolution_values = []
 
@@ -153,6 +150,5 @@ def multi_angle_instant_convolution(
                 autocorrelation_image=autocorrelation_image, theta=theta, mu=mu, sigma=sigma
             )
         )
-        print("for angle", time.time() - c)
 
     return np.array(convolution_values)
