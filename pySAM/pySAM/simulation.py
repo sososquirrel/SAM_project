@@ -3,9 +3,8 @@
 import numpy as np
 import pySAM
 import xarray as xr
+from pySAM.cold_pool.cold_pool import ColdPool
 from pySAM.squall_line.squall_line import SquallLine
-
-print(pySAM.PI)
 
 
 class Simulation:
@@ -50,9 +49,9 @@ class Simulation:
             + f"{self.run}/3D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64_0000302400.com3D.alltimes_{self.run}.nc"
         )
 
-        self.dataset_1d = xr.open_dataset(self.path_field_1d, decode_cf=False, autoclose=True)
-        self.dataset_2d = xr.open_dataset(self.path_field_2d, decode_cf=False, autoclose=True)
-        self.dataset_3d = xr.open_dataset(self.path_field_3d, decode_cf=False, autoclose=True)
+        self.dataset_1d = xr.open_dataset(self.path_field_1d, decode_cf=False)
+        self.dataset_2d = xr.open_dataset(self.path_field_2d, decode_cf=False)
+        self.dataset_3d = xr.open_dataset(self.path_field_3d, decode_cf=False)
 
         # self.dataset_1d.close()
         # self.dataset_2d.close()
@@ -64,4 +63,16 @@ class Simulation:
             x_velocity=self.dataset_3d.U,
             # y_velocity=self.dataset_3d.V,
             z_velocity=self.dataset_3d.W,
+        )
+
+        self.cold_pool = ColdPool(
+            absolute_temperature=self.dataset_3d.TABS,
+            instantaneous_precipitation=self.dataset_2d.PRECi,
+            x_positions=self.dataset_3d.x,
+            y_positions=self.dataset_3d.y,
+            z_positions=self.dataset_3d.z,
+            x_velocity=self.dataset_3d.U,
+            z_velocity=self.dataset_3d.W,
+            cloud_base=self.dataset_3d.QN,
+            humidity=self.dataset_3d.QV,
         )

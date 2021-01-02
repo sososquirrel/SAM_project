@@ -42,3 +42,42 @@ def make_parallel(function, nprocesses):
     # p.close()
 
     return apply
+
+
+def expand_array_to_tzyx_array(
+    time_dependence: bool, input_array: np.array, final_shape: np.array
+) -> np.array:
+
+    if len(final_shape) != 4:
+        raise ValueError("Output must be (t,z,y,x) type")
+
+    if time_dependence == False:
+        if len(input_array.shape) != 1:
+            raise ValueError("Input array with no time dependence must be one-dimensionnal")
+
+        if input_array.shape[0] != final_shape[1]:
+            raise ValueError(
+                "z length of final shape must be equal to the length of input array"
+            )
+
+        output_array = input_array[None, :, None, None]
+
+        output_array.repeat(final_shape[0], axis=0)
+        output_array.repeat(final_shape[2], axis=2)
+        output_array.repeat(final_shape[3], axis=3)
+
+    else:
+        if len(input_array.shape) != 2:
+            raise ValueError("Input array with time dependence must be 2-dimensionnal")
+
+        if (input_array.shape != final_shape[:2]).all():
+            raise ValueError(
+                "time and z lengths of final shape must be equal to the length of input array"
+            )
+
+        output_array = input_array[:, :, None, None]
+
+        output_array.repeat(final_shape[2], axis=2)
+        output_array.repeat(final_shape[3], axis=3)
+
+    return output_array

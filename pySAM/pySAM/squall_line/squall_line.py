@@ -62,7 +62,10 @@ class SquallLine:
             )
 
             angles_distribution = parallel_multi_angle(
-                getattr(self, data_name), theta_range=angles_range, mu=mu, sigma=sigma
+                iterable_values=getattr(self, data_name),
+                theta_range=angles_range,
+                mu=mu,
+                sigma=sigma,
             )
 
         else:  # NO PARALLELIZATION

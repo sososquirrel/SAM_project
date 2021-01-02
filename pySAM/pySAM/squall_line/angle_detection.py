@@ -1,5 +1,7 @@
 """Base functions for angle detection"""
 
+import time
+
 import numpy as np
 from scipy import signal
 
@@ -89,7 +91,7 @@ def normalized_autocorrelation(image: np.array) -> np.array:
 
 
 def convolution_with_gaussian(
-    image: np.array, theta: float, mu: np.array, sigma: np.array
+    autocorrelation_image: np.array, theta: float, mu: np.array, sigma: np.array
 ) -> float:
     """scalar product between autocorrelation image and a gaussian with certain angle theta
 
@@ -103,10 +105,8 @@ def convolution_with_gaussian(
         float: scalar product between autocorrelation image and a gaussian with certain angle theta
     """
 
-    autocorrelation = normalized_autocorrelation(image=image)
-
-    length = autocorrelation.shape[0]
-    width = autocorrelation.shape[1]
+    length = autocorrelation_image.shape[0]
+    width = autocorrelation_image.shape[1]
     x = np.linspace(-3, 3, length)
     y = np.linspace(-3, 3, width)
     x, y = np.meshgrid(x, y)
@@ -120,7 +120,7 @@ def convolution_with_gaussian(
         pos=positions, mu=mu, sigma=rotate_sigma(sigma, theta)
     )
 
-    convolution_value = np.mean(autocorrelation * gaussian_filter)
+    convolution_value = np.mean(autocorrelation_image * gaussian_filter)
 
     return convolution_value
 
@@ -139,11 +139,20 @@ def multi_angle_instant_convolution(
     Returns:
         np.array: array of convolutions for multiple angles
     """
+    a = time.time()
+    autocorrelation_image = normalized_autocorrelation(image)
+    b = time.time()
+    print(b - a)
+
     convolution_values = []
 
     for theta in theta_range:
+        c = time.time()
         convolution_values.append(
-            convolution_with_gaussian(image=image, theta=theta, mu=mu, sigma=sigma)
+            convolution_with_gaussian(
+                autocorrelation_image=autocorrelation_image, theta=theta, mu=mu, sigma=sigma
+            )
         )
+        print("for angle", time.time() - c)
 
     return np.array(convolution_values)

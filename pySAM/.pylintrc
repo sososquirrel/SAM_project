@@ -427,7 +427,10 @@ good-names=i,
            _,
            pySAM,
            x,y,z,
+           X,Y,Z,
+           nx,ny,nz,
            PW,PRECi,
+           TABS,QN,
            U,V,W,
            mu,sigma
 

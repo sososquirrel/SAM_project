@@ -8,6 +8,7 @@ simulation = Simulation(run="squall4", velocity="10", depth_shear="1000")
 
 
 if __name__ == "__main__":
+    """
     print(simulation.squall_line.PW)
     plt.imshow(simulation.squall_line.PW[-1])
     # plt.show()
@@ -21,3 +22,16 @@ if __name__ == "__main__":
         sigma=pySAM.SIGMA_GAUSSIAN,
         parallelize=False,
     )
+    """
+# print(simulation.cold_pool.BUOYANCY)
+
+# plt.imshow(simulation.cold_pool.BUOYANCY[5, :, :, 5])
+# plt.show()
+
+simulation.cold_pool.set_composite_variables(
+    data_name="W",
+    variable_to_look_for_extreme="PRECi",
+    extreme_events_choice="max",
+    x_margin=10,
+    y_margin=2,
+)
