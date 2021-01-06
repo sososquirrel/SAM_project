@@ -37,6 +37,7 @@ class ColdPool:
         z_velocity: np.array,
         cloud_base: np.array,
         humidity: np.array,
+        pressure: np.array,
     ):
         self.TABS = absolute_temperature
         self.PRECi = instantaneous_precipitation
@@ -47,6 +48,7 @@ class ColdPool:
         self.W = z_velocity
         self.QN = cloud_base
         self.QV = humidity / 1000  # must be kg/kg
+        self.P = pressure
 
         self.nx = len(self.X)
         self.ny = len(self.Y)
@@ -77,6 +79,12 @@ class ColdPool:
             final_shape=np.array((self.nt, self.nz, self.ny, self.nx)),
         )
 
+        pressure_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
+            time_dependence=False,
+            input_array=self.P.values[: self.nz],
+            final_shape=np.array((self.nt, self.nz, self.ny, self.nx)),
+        )
+
         self.FMSE = (
             pySAM.HEAT_CAPACITY_AIR * self.TABS
             + pySAM.GRAVITY * z_3d_in_time
@@ -88,7 +96,13 @@ class ColdPool:
             / pySAM.MIXING_RATIO_AIR_WATER_VAPOR
             * self.QV.values
         )
-        # self.POTENTIAL_TEMPERATURE=
+
+        self.POTENTIAL_TEMPERATURE = (
+            self.TABS
+            * (pySAM.STANDARD_REFERENCE_PRESSURE / pressure_3d_in_time)
+            ** pySAM.GAS_CONSTANT_OVER_HEAT_CAPACITY_AIR
+        )
+
         self.BUOYANCY = (
             -pySAM.GRAVITY
             * (self.TABS.values - vertical_mean_temperature_3d_in_time)

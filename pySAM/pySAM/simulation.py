@@ -28,7 +28,7 @@ class Simulation:
         run (TYPE): Description
     """
 
-    def __init__(self, run: str, velocity: str, depth_shear: str):
+    def __init__(self, data_folder_path: str, run: str, velocity: str, depth_shear: str):
         """Init"""
 
         self.run = run
@@ -37,15 +37,15 @@ class Simulation:
 
         # data_folder_path = "/Users/sophieabramian/Desktop/SAM_project/data"
         self.path_field_1d = (
-            pySAM.DATA_FOLDER_PATH
+            data_folder_path
             + f"{self.run}/1D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_{self.run}.nc"
         )
         self.path_field_2d = (
-            pySAM.DATA_FOLDER_PATH
+            data_folder_path
             + f"/{self.run}/2D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64.2Dcom_1_{self.run}.nc"
         )
         self.path_field_3d = (
-            pySAM.DATA_FOLDER_PATH
+            data_folder_path
             + f"{self.run}/3D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64_0000302400.com3D.alltimes_{self.run}.nc"
         )
 
@@ -75,4 +75,31 @@ class Simulation:
             z_velocity=self.dataset_3d.W,
             cloud_base=self.dataset_3d.QN,
             humidity=self.dataset_3d.QV,
+            pressure=self.dataset_1d.p,
         )
+
+        print("hjkjhkhjkhkjjhk", self.__dict__.items())
+
+        def load(self, backup_folder_path):
+            f = open(backup_folder_path, "rb")
+            tmp_dict = pickle.load(f)
+            f.close()
+            self.__dict__.update(tmp_dict)
+
+            # self.initialize()
+
+        def save(self, backup_folder_path):
+            # save netcdf4 data
+            # self.dataset_1D.to_netcdf(path=self.path_fields_1D, mode='w')
+            # self.dataset_2D.to_netcdf(path=self.path_fields_2D, mode='w')
+
+            # save other type of data in pickles
+            your_blacklisted_set = ["dataset_1d", "dataset_2d", "dataset_3d"]
+            dict2 = [
+                (key, value)
+                for (key, value) in self.__dict__.items()
+                if key not in your_blacklisted_set
+            ]
+            f = open(backup_folder_path, "wb")
+            pickle.dump(dict2, f, 2)
+            f.close()

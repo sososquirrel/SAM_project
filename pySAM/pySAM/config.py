@@ -13,13 +13,12 @@ GRAVITY = 9.8  # (m/s2)
 # computer constant
 N_CPU = multiprocessing.cpu_count()
 
-# data folder
-DATA_FOLDER_PATH = "/Users/sophieabramian/Desktop/SAM_project/data/"
-
 # air properties
 HEAT_CAPACITY_AIR = 1004  # (J/K/kg)
 LATENT_HEAT_AIR = 2.5 * 10 ** 6  # (J/kg)
 GAS_CONSANT_AIR = 287  # (J/K/kg)
+STANDARD_REFERENCE_PRESSURE = 1000  # mb
+GAS_CONSTANT_OVER_HEAT_CAPACITY_AIR = 0.286  # (/K)
 
 # vapour propoerties
 GAS_CONSTANT_WATER_VAPOR = 461.5  # (J/K/kg)

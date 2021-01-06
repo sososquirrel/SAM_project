@@ -4,10 +4,14 @@ import pySAM
 import xarray as xr
 from simulation import Simulation
 
-simulation = Simulation(run="squall4", velocity="10", depth_shear="1000")
-
-
 if __name__ == "__main__":
+    # data folder
+    data_folder_path = "/Users/sophieabramian/Desktop/SAM_project/data/"
+
+    simulation = Simulation(
+        data_folder_path=data_folder_path, run="squall4", velocity="10", depth_shear="1000"
+    )
+
     print(simulation.squall_line.PW)
     # plt.imshow(simulation.squall_line.PW[-1])
     # plt.show()
@@ -25,6 +29,7 @@ if __name__ == "__main__":
     print(simulation.squall_line.angle_degrees)
     plt.plot(pySAM.THETA_ARRAY - np.pi / 2, simulation.squall_line.distribution_angles)
     plt.show()
+
 
 # print(simulation.cold_pool.BUOYANCY)
 
