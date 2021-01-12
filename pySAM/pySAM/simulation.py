@@ -1,7 +1,11 @@
 """coucou"""
 
+import pickle
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pySAM
+import utils
 import xarray as xr
 from pySAM.cold_pool.cold_pool import ColdPool
 from pySAM.squall_line.squall_line import SquallLine
@@ -57,6 +61,8 @@ class Simulation:
         # self.dataset_2d.close()
         # self.dataset_3d.close()
 
+        self.color = utils.color(self.velocity, self.depth_shear)
+
         self.squall_line = SquallLine(
             precipitable_water=self.dataset_2d.PW,
             instantaneous_precipitation=self.dataset_2d.PRECi,
@@ -76,30 +82,61 @@ class Simulation:
             cloud_base=self.dataset_3d.QN,
             humidity=self.dataset_3d.QV,
             pressure=self.dataset_1d.p,
+            depth_shear=self.depth_shear,
         )
 
-        print("hjkjhkhjkhkjjhk", self.__dict__.items())
+    def load(self, backup_folder_path):
+        f = open(
+            backup_folder_path
+            + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
+            "rb",
+        )
+        tmp_dict = pickle.load(f)
+        f.close()
+        self.__dict__.update(tmp_dict)
 
-        def load(self, backup_folder_path):
-            f = open(backup_folder_path, "rb")
-            tmp_dict = pickle.load(f)
-            f.close()
-            self.__dict__.update(tmp_dict)
+        self.squall_line.load(
+            backup_folder_path
+            + f"{self.run}/squall_line/saved_squall_line_U{self.velocity}_H{self.depth_shear}"
+        )
+        self.cold_pool.load(
+            backup_folder_path
+            + f"{self.run}/cold_pool/saved_cold_pool_U{self.velocity}_H{self.depth_shear}"
+        )
 
-            # self.initialize()
+        # self.initialize()
 
-        def save(self, backup_folder_path):
-            # save netcdf4 data
-            # self.dataset_1D.to_netcdf(path=self.path_fields_1D, mode='w')
-            # self.dataset_2D.to_netcdf(path=self.path_fields_2D, mode='w')
+    def save(self, backup_folder_path):
+        # save netcdf4 data
+        # self.dataset_1D.to_netcdf(path=self.path_fields_1D, mode='w')
+        # self.dataset_2D.to_netcdf(path=self.path_fields_2D, mode='w')
 
-            # save other type of data in pickles
-            your_blacklisted_set = ["dataset_1d", "dataset_2d", "dataset_3d"]
-            dict2 = [
-                (key, value)
-                for (key, value) in self.__dict__.items()
-                if key not in your_blacklisted_set
-            ]
-            f = open(backup_folder_path, "wb")
-            pickle.dump(dict2, f, 2)
-            f.close()
+        # save other type of data in pickles
+        your_blacklisted_set = [
+            "dataset_1d",
+            "dataset_2d",
+            "dataset_3d",
+            "squall_line",
+            "cold_pool",
+        ]
+        dict2 = [
+            (key, value)
+            for (key, value) in self.__dict__.items()
+            if key not in your_blacklisted_set
+        ]
+        f = open(
+            backup_folder_path
+            + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
+            "wb",
+        )
+        pickle.dump(dict2, f, 2)
+        f.close()
+
+        self.squall_line.save(
+            backup_folder_path
+            + f"{self.run}/squall_line/saved_squall_line_U{self.velocity}_H{self.depth_shear}"
+        )
+        self.cold_pool.save(
+            backup_folder_path
+            + f"{self.run}/cold_pool/saved_cold_pool_U{self.velocity}_H{self.depth_shear}"
+        )

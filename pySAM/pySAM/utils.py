@@ -1,5 +1,6 @@
 """huk"""
 
+import matplotlib.pyplot as plt
 import numpy as np
 from multiprocess import Pool
 
@@ -104,3 +105,11 @@ def expand_array_to_tzyx_array(
         output_array.repeat(final_shape[3], axis=3)
 
     return output_array
+
+
+def color(velocity: str, depth: str):
+    if velocity == "0":
+        return "grey"
+    else:
+        cmap = plt.cm.get_cmap("hsv")
+        return cmap(float(velocity) / 20)
