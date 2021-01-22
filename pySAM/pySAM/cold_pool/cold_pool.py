@@ -49,6 +49,7 @@ class ColdPool:
         humidity: np.array,
         pressure: np.array,
         depth_shear: str,
+        humidity_evp: np.array,
     ):
         self.TABS = absolute_temperature
         self.PRECi = instantaneous_precipitation
@@ -61,6 +62,7 @@ class ColdPool:
         self.QV = humidity / 1000  # must be kg/kg
         self.P = pressure
         self.depth_shear = depth_shear
+        self.QPEVP = humidity_evp
 
         self.nx = len(self.X)
         self.ny = len(self.Y)
@@ -76,6 +78,7 @@ class ColdPool:
         self.set_basic_variables_from_dataset()
 
     def save(self, path_to_save: str):
+
         blacklisted_set = [
             "TABS",
             "PRECi",
@@ -93,10 +96,12 @@ class ColdPool:
             "BUOYANCY",
             "VORTICITY",
             "POTENTIAL_TEMPERATURE",
+            "QPEVP",
         ]
         dict = [
             (key, value) for (key, value) in self.__dict__.items() if key not in blacklisted_set
         ]
+
         f = open(path_to_save, "wb")
         pickle.dump(dict, f, 2)
         f.close()
@@ -105,6 +110,7 @@ class ColdPool:
         f = open(path_to_load, "rb")
         tmp_dict = pickle.load(f)
         f.close()
+
         self.__dict__.update(tmp_dict)
 
     def set_basic_variables_from_dataset(self):
@@ -142,6 +148,12 @@ class ColdPool:
             * self.QV.values
         )
 
+        vertical_mean_virtual_temperature_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
+            time_dependence=True,
+            input_array=np.mean(self.VIRTUAL_TEMPERATURE.values, axis=(2, 3)),
+            final_shape=np.array((self.nt, self.nz, self.ny, self.nx)),
+        )
+
         self.POTENTIAL_TEMPERATURE = (
             self.TABS
             * (pySAM.STANDARD_REFERENCE_PRESSURE / pressure_3d_in_time)
@@ -150,9 +162,10 @@ class ColdPool:
 
         self.BUOYANCY = (
             pySAM.GRAVITY
-            * (self.TABS.values - vertical_mean_temperature_3d_in_time)
-            / self.TABS.values
+            * (self.VIRTUAL_TEMPERATURE.values - vertical_mean_virtual_temperature_3d_in_time)
+            / vertical_mean_virtual_temperature_3d_in_time
         )
+
         self.VORTICITY = np.gradient(self.U.values, self.Z, axis=1) - np.gradient(
             self.W.values, self.X, axis=3
         )

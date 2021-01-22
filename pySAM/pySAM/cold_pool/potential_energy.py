@@ -13,9 +13,9 @@ def hight_max_index(z_array: np.array, depth_shear: str) -> int:
     Returns:
         int: Index of the cold pool hight, is over-evaluate
     """
-    cold_pool_hight_max = 0.8 * float(
+    cold_pool_hight_max = 1.19 * float(
         depth_shear
-    )  # cold pools are known to scale depth shear, here we take 0.8 depth shear depth
+    )  # cold pools are known to scale depth shear, here we take 1.5 depth shear depth
 
     cold_pool_hight_max_index = np.where(z_array < cold_pool_hight_max)[0][-1]
 
@@ -28,8 +28,8 @@ def potential_energy(
     """Return the energy potential of cold pool as a function of x, the imposed flow direction.
     Common input is buoyancy composite, but you can also use temperature anomaly.
     X is a regular spaced array, that start at the extreme left of the cold
-    (generally the maximu of precipitation), and end 10's km to the right.
-    The output is the intgrale of buoyancy composite over the cold pool domains
+    (generally the maximum of precipitation), and end 10's km to the right.
+    The output is the intgerale of buoyancy composite over the cold pool domains
 
     Args:
         data_array (np.array): Buoyancy composite, temperature composite, of shape (nz,nx). data_array[nx//2] must be max of precipitation

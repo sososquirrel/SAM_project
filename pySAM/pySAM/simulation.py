@@ -5,10 +5,10 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import pySAM
-import utils
 import xarray as xr
 from pySAM.cold_pool.cold_pool import ColdPool
 from pySAM.squall_line.squall_line import SquallLine
+from pySAM.utils import color
 
 
 class Simulation:
@@ -61,7 +61,14 @@ class Simulation:
         # self.dataset_2d.close()
         # self.dataset_3d.close()
 
-        self.color = utils.color(self.velocity, self.depth_shear)
+        self.color = color(self.velocity, self.depth_shear)
+
+        self.add_variable_to_dataset(
+            dataset_name="dataset_3d",
+            variable_name="QPEVP",
+            variable_data_path=data_folder_path
+            + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
+        )
 
         self.squall_line = SquallLine(
             precipitable_water=self.dataset_2d.PW,
@@ -83,7 +90,22 @@ class Simulation:
             humidity=self.dataset_3d.QV,
             pressure=self.dataset_1d.p,
             depth_shear=self.depth_shear,
+            humidity_evp=self.dataset_3d.QPEVP,
         )
+
+    def add_variable_to_dataset(
+        self, dataset_name: str, variable_name: str, variable_data_path: str
+    ):
+        """adds a netcdf4 variable to a xarray dataset
+
+        Args:
+            dataset_name (str): name of the dataset, must be in ['dataset_1d, dataset_2d, dataset_3d']
+            variabla_name (str): name of the new variable
+            variable_data (np.array): path to get the data
+        """
+        dataset = getattr(self, dataset_name)
+        data_array = xr.open_dataarray(variable_data_path)
+        dataset[variable_name] = data_array
 
     def load(self, backup_folder_path):
         f = open(

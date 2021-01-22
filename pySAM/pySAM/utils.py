@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from multiprocess import Pool
 
 
@@ -108,6 +109,15 @@ def expand_array_to_tzyx_array(
 
 
 def color(velocity: str, depth: str):
+    """Returns a specific color for each simulation, very convenient for plot
+
+    Args:
+        velocity (str): Basal velocity
+        depth (str): Depth of the shear
+
+    Returns:
+        TYPE: cmap color
+    """
     if velocity == "0":
         return "grey"
     else:

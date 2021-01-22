@@ -24,8 +24,16 @@ def extract_circular_block(
     if len(data.shape) == 3 and y_index_middle_array is None and y_margin is None:
         raise ValueError("3D data requires y_index_middle_array and y_margin")
 
+    if None in [y_index_middle_array, y_margin]:
+        assert y_index_middle_array is None
+        assert y_margin is None
+
     if len(data.shape) == 2 and y_index_middle_array is not None and y_margin is not None:
         raise ValueError("no y_index_middle_array and y_margin for 2D data")
+
+    if y_index_middle_array is not None:
+        if y_index_middle_array.shape[0] != x_index_middle_array.shape[0]:
+            raise ValueError("x middle array and y middle array must be same size")
 
     if len(data.shape) == 3:
         concatenated_data_x = np.concatenate((data, data, data), axis=2)
@@ -33,7 +41,7 @@ def extract_circular_block(
             (concatenated_data_x, concatenated_data_x, concatenated_data_x), axis=1
         )
 
-        nz, ny, nx = data.shape
+        _, ny, nx = data.shape
 
         extracted_data = []
 
@@ -41,20 +49,21 @@ def extract_circular_block(
             extracted_data.append(
                 concatenated_data_xy[
                     :,
-                    ny + y_index_middle - y_margin : ny + y_index_middle + y_margin,
-                    nx + x_index_middle - x_margin : nx + x_index_middle + x_margin,
+                    ny + y_index_middle - y_margin : ny + y_index_middle + y_margin + 1,
+                    nx + x_index_middle - x_margin : nx + x_index_middle + x_margin + 1,
                 ]
             )
 
     elif len(data.shape) == 2:
         concatenated_data_x = np.concatenate((data, data, data), axis=0)
-        nx, nz = data.shape
+
+        nx, _ = data.shape
 
         extracted_data = []
         for x_index_middle in x_index_middle_array:
             extracted_data.append(
                 concatenated_data_x[
-                    nx + x_index_middle - x_margin : nx + x_index_middle + x_margin, :
+                    (nx + x_index_middle - x_margin) : (nx + x_index_middle + x_margin + 1), :
                 ]
             )
 
@@ -62,51 +71,33 @@ def extract_circular_block(
 
 
 def extreme_index(
-    data: np.array, variable_to_look_for_extreme: np.array, extreme_events_choice: str
+    nb_dim_data: int, variable_to_look_for_extreme: np.array, extreme_events_choice: str
 ) -> np.array:
 
     if extreme_events_choice not in ["max", "1-percentile", "10-percentile"]:
         raise ValueError("data name must be in [max,1-percentile,10-percentile]")
 
-    if len(data.shape) == 2:
-        if extreme_events_choice == "max":
-            x_index_middle_array = np.where(
-                variable_to_look_for_extreme == np.max(variable_to_look_for_extreme)
-            )[0]
+    if extreme_events_choice == "max":
+        index_middle_array = np.where(
+            variable_to_look_for_extreme == np.max(variable_to_look_for_extreme)
+        )
 
+    else:
         if extreme_events_choice == "1-percentile":
-            x_index_middle_array = np.unique(
-                np.where(
-                    variable_to_look_for_extreme
-                    > np.percentile(variable_to_look_for_extreme, 99)
-                )[0]
-            )
+            percentile_value = 1
 
         if extreme_events_choice == "10-percentile":
-            x_index_middle_array = np.unique(
-                np.where(
-                    variable_to_look_for_extreme
-                    > np.percentile(variable_to_look_for_extreme, 90)
-                )[0]
-            )
-        return np.array(x_index_middle_array)
+            percentile_value = 10
 
-    if len(data.shape) == 3:
-        if extreme_events_choice == "max":
-            x_index_middle_array, y_index_middle_array = np.where(
-                variable_to_look_for_extreme == np.max(variable_to_look_for_extreme)
-            )
+        index_middle_array = np.where(
+            variable_to_look_for_extreme
+            > np.percentile(variable_to_look_for_extreme, 100 - percentile_value)
+        )
 
-        if extreme_events_choice == "1-percentile":
-            x_index_middle_array, y_index_middle_array = np.where(
-                variable_to_look_for_extreme > np.percentile(variable_to_look_for_extreme, 99)
-            )
+    if nb_dim_data == 2:
+        return np.unique(index_middle_array[1])
 
-        if extreme_events_choice == "10-percentile":
-            x_index_middle_array, y_index_middle_array = np.where(
-                variable_to_look_for_extreme > np.percentile(variable_to_look_for_extreme, 90)
-            )
-        return np.array(x_index_middle_array), np.array(y_index_middle_array)
+    return index_middle_array
 
 
 def instant_mean_extraction_data_over_extreme(
@@ -124,8 +115,8 @@ def instant_mean_extraction_data_over_extreme(
         raise ValueError("no y_margin for 2D data")
 
     if len(data.shape) == 3:
-        x_index_middle_array, y_index_middle_array = extreme_index(
-            data=data,
+        y_index_middle_array, x_index_middle_array = extreme_index(
+            nb_dim_data=3,
             variable_to_look_for_extreme=variable_to_look_for_extreme,
             extreme_events_choice=extreme_events_choice,
         )
@@ -146,7 +137,7 @@ def instant_mean_extraction_data_over_extreme(
 
     if len(data.shape) == 2:
         x_index_middle_array = extreme_index(
-            data=data,
+            nb_dim_data=2,
             variable_to_look_for_extreme=variable_to_look_for_extreme,
             extreme_events_choice=extreme_events_choice,
         )
