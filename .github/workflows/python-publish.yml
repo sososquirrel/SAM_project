@@ -35,8 +35,8 @@ jobs:
       run: |
         pytest
     - name: Pytest Coverage
-      #env:
-      #PYTHONPATH: "./pySAM/"
+      env:
+        PYTHONPATH: "./pySAM/"
       run: |
         pytest --cov=pySAM
     - name: Pylint
