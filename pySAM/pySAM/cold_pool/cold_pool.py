@@ -1,40 +1,45 @@
-"""Definition of cold pool class"""
+"""Cold Pool class, allows to analyze and describe formation of cold pool"""
 
 import pickle
 
 import numpy as np
 import pySAM
 from pySAM.cold_pool.composite import instant_mean_extraction_data_over_extreme
-from pySAM.cold_pool.geometry_profil import geometry_profil
+from pySAM.cold_pool.geometry_profile import geometry_profile
 from pySAM.cold_pool.potential_energy import potential_energy
 from pySAM.utils import make_parallel
 
 
 class ColdPool:
 
-    """Summary
+    """ColdPool creates object that gathers all variables useful to analyse and descibe a cold pool.
+    It allows you to calculate composite figures, ie statistical overview of extreme events.
+    The potential energy of cold pool is here defined and calculated and from there you can deduce the
+    propagation velocity of the cold pool. This can be put in parallel with the imposed wind shear.
 
     Attributes:
-        BUOYANCY (TYPE): Description
-        depth_shear (TYPE): Description
-        FMSE (TYPE): Description
-        nt (TYPE): Description
-        nx (TYPE): Description
-        ny (TYPE): Description
-        nz (TYPE): Description
-        P (TYPE): Description
-        POTENTIAL_TEMPERATURE (TYPE): Description
-        PRECi (TYPE): Description
-        QN (TYPE): Description
-        QV (TYPE): Description
-        TABS (TYPE): Description
-        U (TYPE): Description
-        VIRTUAL_TEMPERATURE (TYPE): Description
-        VORTICITY (TYPE): Description
-        W (TYPE): Description
-        X (TYPE): Description
-        Y (TYPE): Description
-        Z (TYPE): Description
+        BUOYANCY (xr.DataArray): Buoyancy (y,z,y,x)
+        DEPTH_SHEAR (str): depth shear of the wind profile
+        FMSE (xr.DataArray): Moist static energy (y,z,y,x)
+        nt (int): number of time steps
+        nx (int): number of x steps
+        ny (int): number of y steps
+        nz (int): number of z steps
+        P (xr.DataArray): Pressure
+        POTENTIAL_TEMPERATURE (xr.DataArray): Potential temperature (y,z,y,x)
+        PRECi (xr.DataArray): Precipitation (t,y,x)
+        QN (xr.DataArray): QN
+        QPEVP (xr.DataArray): QVEPV
+        QV (xr.DataArray): QV
+        TABS (xr.DataArray): Absolute Temperature
+        U (xr.DataArray): x component of velocity
+        VIRTUAL_TEMPERATURE (xr.DataArray): Virual temperature
+        VORTICITY (xr.DataArray): Vorticity
+        W (xr.DataArray): z component of velocity
+        X (xr.DataArray): x direction
+        Y (xr.DataArray): y direction
+        Z (xr.DataArray): z direction
+
     """
 
     def __init__(
@@ -51,7 +56,10 @@ class ColdPool:
         pressure: np.array,
         depth_shear: str,
         humidity_evp: np.array,
+        plot_mode: bool = False,  # plot_mode=True to partially load dataset and earn time
     ):
+
+        self.depth_shear = depth_shear
         self.TABS = absolute_temperature
         self.PRECi = instantaneous_precipitation
         self.X = x_positions
@@ -62,7 +70,6 @@ class ColdPool:
         self.QN = cloud_base
         self.QV = humidity / 1000  # must be kg/kg
         self.P = pressure
-        self.depth_shear = depth_shear
         self.QPEVP = humidity_evp
 
         self.nx = len(self.X)
@@ -70,54 +77,48 @@ class ColdPool:
         self.nz = len(self.Z)
         self.nt = len(self.TABS)
 
-        self.FMSE = None
-        self.VIRTUAL_TEMPERATURE = None
-        self.POTENTIAL_TEMPERATURE = None
-        self.BUOYANCY = None
-        self.VORTICITY = None
-
-        self.set_basic_variables_from_dataset()
+        if not plot_mode:
+            self.FMSE = None
+            self.VIRTUAL_TEMPERATURE = None
+            self.POTENTIAL_TEMPERATURE = None
+            self.BUOYANCY = None
+            self.VORTICITY = None
+            self.set_basic_variables_from_dataset()
 
     def save(self, path_to_save: str):
+        """Will save the class as a pickle but will ignore attributes wwritten in UPPERCASE
+            Those ones are loaded directly from dataset, so no need to store them in pickle
 
-        blacklisted_set = [
-            "TABS",
-            "PRECi",
-            "X",
-            "Y",
-            "Z",
-            "U",
-            "W",
-            "QN",
-            "QV",
-            "P",
-            "depth_shear",
-            "FMSE",
-            "VIRTUAL_TEMPERATURE",
-            "BUOYANCY",
-            "VORTICITY",
-            "POTENTIAL_TEMPERATURE",
-            "QPEVP",
-        ]
-        dict = [
-            (key, value) for (key, value) in self.__dict__.items() if key not in blacklisted_set
+        Args:
+            path_to_save (str): path and name of the backup
+        """
+
+        # SELECT ONLY attributes whose names are in lower cases
+        dictionary = [
+            (key, value) for (key, value) in self.__dict__.items() if not key.isupper()
         ]
 
-        f = open(path_to_save, "wb")
-        pickle.dump(dict, f, 2)
-        f.close()
+        file = open(path_to_save, "wb")
+        pickle.dump(dictionary, file, 2)
+        file.close()
 
     def load(self, path_to_load: str):
-        f = open(path_to_load, "rb")
-        tmp_dict = pickle.load(f)
-        f.close()
+        """Load cold pool from pickle file
+
+        Args:
+            path_to_load (str): path of loaded file
+        """
+        file = open(path_to_load, "rb")
+        tmp_dict = pickle.load(file)
+        file.close()
 
         self.__dict__.update(tmp_dict)
 
     def set_basic_variables_from_dataset(self):
         """Compute basic variables from dataset variable
 
-        One must care of dataset variable shape, here it is adapted to (nt,nz,ny,nx) data
+        One must care of dataset variable shape, here it is adapted to (nt,nz,ny,nx) data !
+        this method is called ONLY IF self.plot_mode == FALSE
         """
         z_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
             time_dependence=False,
@@ -125,11 +126,12 @@ class ColdPool:
             final_shape=np.array((self.nt, self.nz, self.ny, self.nx)),
         )
 
-        vertical_mean_temperature_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
-            time_dependence=True,
-            input_array=np.mean(self.TABS.values, axis=(2, 3)),
-            final_shape=np.array((self.nt, self.nz, self.ny, self.nx)),
-        )
+        # @@@@ UNUSED !!!
+        # vertical_mean_temperature_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
+        #     time_dependence=True,
+        #     input_array=np.mean(self.TABS.values, axis=(2, 3)),
+        #     final_shape=np.array((self.nt, self.nz, self.ny, self.nx)),
+        # )
 
         pressure_3d_in_time = pySAM.utils.expand_array_to_tzyx_array(
             time_dependence=False,
@@ -227,18 +229,23 @@ class ColdPool:
 
         setattr(self, data_name + "_composite", composite_variable)
 
-    def set_geometry_profil(
+    def set_geometry_profile(
         self,
         data_name: str,
         threshold: float,
     ):
+        """Computes the profile of the cold pool in the x and z plane
 
+        Args:
+            data_name (str): Name of the variable to catch the cold pool
+            threshold (float): Variable threshold, below it is in cold pool, above not
+        """
         if "_composite" not in data_name:
             raise ValueError("data must be composite variable")
 
         data_array = getattr(self, data_name)
 
-        geometry_profil_line = geometry_profil(
+        geometry_profile_line = geometry_profile(
             data_array=data_array,
             x_array=self.X,
             z_array=self.Z,
@@ -246,15 +253,24 @@ class ColdPool:
             vertical_level_0=pySAM.LOWEST_ATMOSPHERIC_LEVEL,
         )
 
-        setattr(self, "profil_" + str(int(abs(threshold * 1000))), geometry_profil_line)
+        setattr(self, "profile_" + str(int(abs(threshold * 1000))), geometry_profile_line)
         setattr(
             self,
             "mean_height_" + str(int(abs(threshold * 1000))),
-            np.mean(geometry_profil_line[1]),
+            np.mean(geometry_profile_line[1]),
         )
 
     def set_potential_energy(self, data_name: str, x_size: int) -> np.array:
+        """Computes the potentential energy of a cold pool as a function of x.
+        For each x, provided data is integrated in z from the bottom to the top of the cold pool.
 
+        Args:
+            data_name (str): Name of the variable to integrate in z
+            x_size (int): range of x you want to compute the potential energy
+
+        Raises:
+            ValueError: Data must be composite variable
+        """
         if "_composite" not in data_name:
             raise ValueError("data must be composite variable")
 

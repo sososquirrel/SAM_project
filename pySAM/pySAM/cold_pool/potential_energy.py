@@ -32,10 +32,12 @@ def potential_energy(
     The output is the intgerale of buoyancy composite over the cold pool domains
 
     Args:
-        data_array (np.array): Buoyancy composite, temperature composite, of shape (nz,nx). data_array[nx//2] must be max of precipitation
+        data_array (np.array): Buoyancy composite, temperature composite, of shape (nz,nx). data_array[nx//2]
+                                must be max of precipitation
         z_array (np.array): vertical array, of shape (nz,)
         x_size (int): typically half of the length of your cold pool in x direction
-        depth_shear (str): cold pools are known to scale depth shear, 1.5 of depth shear will be the upper boudnary for integration
+        depth_shear (str): cold pools are known to scale depth shear, 1.5 of depth shear
+                            will be the upper boudnary for integration
 
     Returns:
         potential_energy_array (np.array) : energy potential off the cold pool as a funciton of x, of shape (x_size,)
@@ -58,10 +60,10 @@ def potential_energy(
         else:
             y_intersect_index = np.where(data_array_x < -0.0005)[0][-1]
 
-            dz = np.diff(z_array[: y_intersect_index + 1])
+            z_diff = np.diff(z_array[: y_intersect_index + 1])
 
             potential_energy_x = np.sum(
-                -data_array[:y_intersect_index, x_max_precip + x_index] * dz
+                -data_array[:y_intersect_index, x_max_precip + x_index] * z_diff
             )
         potential_energy_array.append(potential_energy_x)
 

@@ -73,7 +73,13 @@ def extract_circular_block(
 def extreme_index(
     nb_dim_data: int, variable_to_look_for_extreme: np.array, extreme_events_choice: str
 ) -> np.array:
+    """Summary
 
+    Args:
+        nb_dim_data (int): Description
+        variable_to_look_for_extreme (np.array): Description
+        extreme_events_choice (str): Description
+    """
     if extreme_events_choice not in ["max", "1-percentile", "10-percentile"]:
         raise ValueError("data name must be in [max,1-percentile,10-percentile]")
 
@@ -107,12 +113,24 @@ def instant_mean_extraction_data_over_extreme(
     x_margin: int,
     y_margin: int = None,
 ):
+    # pylint: disable=R1705
+    """Summary
+
+    Args:
+        data (np.array): Description
+        variable_to_look_for_extreme (np.array): Description
+        extreme_events_choice (str): Description
+        x_margin (int): Description
+        y_margin (int, optional): Description
+    """
+    if len(data.shape) not in [2, 3]:
+        raise ValueError("data must be either 2D or 3D")
 
     if len(data.shape) == 3 and y_margin is None:
         raise ValueError("3D data requires y_margin")
 
     if len(data.shape) == 2 and y_margin is not None:
-        raise ValueError("no y_margin for 2D data")
+        raise ValueError("no y_margin required for 2D data")
 
     if len(data.shape) == 3:
         y_index_middle_array, x_index_middle_array = extreme_index(
@@ -131,11 +149,11 @@ def instant_mean_extraction_data_over_extreme(
 
         if len(instant_data_over_extreme) == 1:
             return np.mean(instant_data_over_extreme[0], axis=1)
-        else:
-            instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=0)
-            return instant_data_over_extreme
 
-    if len(data.shape) == 2:
+        instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=0)
+        return instant_data_over_extreme
+
+    else:  # len(data.shape) == 2
         x_index_middle_array = extreme_index(
             nb_dim_data=2,
             variable_to_look_for_extreme=variable_to_look_for_extreme,
@@ -148,7 +166,7 @@ def instant_mean_extraction_data_over_extreme(
 
         if len(instant_data_over_extreme) == 1:
             return instant_data_over_extreme
-        else:
-            instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=0)
-            instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=1)
-            return instant_data_over_extreme
+
+        instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=(0, 1))
+        # instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=1)
+        return instant_data_over_extreme

@@ -1,4 +1,4 @@
-"""Definition of squall line class"""
+"""Squall Line class, allows to analyze organisation of convection into squall lines"""
 
 import pickle
 
@@ -10,15 +10,22 @@ from pySAM.utils import make_parallel
 
 class SquallLine:
 
-    """Summary
+    """SquallLine creates object that gathers all information of squall lines.
+    You measure the organisation of convection, get the orientation of the line along time,
+    get the global angle of the squall line
 
     Attributes:
-        distribution_angles (TYPE): Description
-        PRECi (TYPE): Description
-        PW (TYPE): Description
-        U (TYPE): Description
-        V (TYPE): Description
-        W (TYPE): Description
+        angle_degrees (float): Global orientation angle of the squall line in degrees.
+                                0 degree means the squall line is perpendicular to the shear
+        angle_radian (float): Global orientation angle of the squall line in radian.
+                                0 degree means the squall line is perpendicular to the shear
+        distribution_angles (np.array): Distribution of the orientation along time
+
+        PRECi (xr.array): Precipitation [mm] (t,z,y,x)
+        PW (xr.array): Precipitable Water [mm] (t,z,y,x)
+        U (xr.array): X component of the velocity field [m/s]
+        W (xr.array): Z component of the velocity field [m/s]
+
     """
 
     def __init__(
@@ -35,20 +42,31 @@ class SquallLine:
 
         self.distribution_angles = None
         self.angle_degrees = None
+        self.angle_radian = None
 
     def save(self, path_to_save: str):
-        blacklisted_set = ["PW", "PRECi", "U", "W"]
-        dict = [
-            (key, value) for (key, value) in self.__dict__.items() if key not in blacklisted_set
+        """Saves instance of the class except from starting data
+
+        Args:
+            path_to_save (str): path to the saving file
+        """
+        dictionary = [
+            (key, value) for (key, value) in self.__dict__.items() if not key.isupper()
         ]
-        f = open(path_to_save, "wb")
-        pickle.dump(dict, f, 2)
-        f.close()
+        file = open(path_to_save, "wb")
+        pickle.dump(dictionary, file, 2)
+        file.close()
 
     def load(self, path_to_load: str):
-        f = open(path_to_load, "rb")
-        tmp_dict = pickle.load(f)
-        f.close()
+        # pylint: disable=R0801
+        """Loads calculated variables
+
+        Args:
+            path_to_load (str): path to the saved file
+        """
+        file = open(path_to_load, "rb")
+        tmp_dict = pickle.load(file)
+        file.close()
         self.__dict__.update(tmp_dict)
 
     def set_distribution_angles(
@@ -117,6 +135,12 @@ class SquallLine:
         )
 
     def set_maximum_variance_step(self, data_name: str):
+        """Returns the timestep where the squall lines is the most
+        organized according to a reference data ie where the variance of PW (for exemple) is maximum
+
+        Args:
+            data_name (str): 2d fields that well represents convective organisation
+        """
         variance_evolution = []
         for data in getattr(self, data_name):
             variance_evolution.append([np.var(data)])

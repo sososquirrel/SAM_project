@@ -1,4 +1,4 @@
-"""coucou"""
+"""Simulation class, allows to post process outputs of SAM"""
 
 import pickle
 
@@ -10,49 +10,53 @@ from pySAM.utils import color
 
 class Simulation:
 
-    """Summary
+    """Simulation creates an object that gathers all the datasets from simulation.
+    It is designed here to study the convective response to linear wind shear profil.
+    Squall lines and cold pools are the main features to be studied in this case.
+    An object Simulation represents 3Gb of data, and default settings load all the datasets.
+    Everything you calculated is saved in a pickle. Methods save and load provide access to these previous calculus.
+    You have a "plot mode" that allows you to partially load dataset and get access to your previous calculus.
+
+    For plotting, a specify color is associated with each case. This might be very useful to keep consistence between plots.
 
     Attributes:
-        dataset_1d (TYPE): DescriphuihdziuhEIUDHUZItion
-        dataset_2d (TYPE): Description
-        dataset_3d (TYPE): Description
+        cold_pool (ColdPool): gathers all variable and methods to analyse cold pool and describe it
+        color (cmap): matplotlib color defined for each case
+        dataset_1d (xr.Datastet): Dataset with all 1d variables from SAM
+        dataset_2d (xr.Datastet): Dataset with all 2d variables from SAM
+        dataset_3d (xr.Datastet): Dataset with all 3d variables from SAM
 
-        depth_shear (TYPE): Description
-        path_field_1d (TYPE): Description
-        path_field_2d (TYPE): Description
-        path_field_3d (TYPE): Description
-        run (TYPE): Description
-        squall_line (TYPE): Description
-        velocity (TYPE): Description
+        depth_shear (str): depth shear of the linear wind shear profil
+        path_field_1d (str): path to the dataset_1d storage
+        path_field_2d (str): path to the dataset_2d storage
+        path_field_3d (str): path to the dataset_3d storage
+        run (str): name of the simulation set
+        squall_line (SquallLine): gathers all variable and methods to analyse squall line and describe it
+        velocity (str): basal velocity of the linear wind shear profil
 
-    Deleted Attributes:
-        run (TYPE): Description
     """
 
-    def __init__(self, data_folder_path: str, run: str, velocity: str, depth_shear: str):
+    def __init__(
+        self,
+        data_folder_paths: list,
+        run: str,
+        velocity: str,
+        depth_shear: str,
+        plot_mode: bool = False,
+    ):
         """Init"""
 
         self.run = run
         self.velocity = velocity
         self.depth_shear = depth_shear
 
-        # data_folder_path = "/Users/sophieabramian/Desktop/SAM_project/data"
-        self.path_field_1d = (
-            data_folder_path
-            + f"{self.run}/1D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_{self.run}.nc"
-        )
-        self.path_field_2d = (
-            data_folder_path
-            + f"/{self.run}/2D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64.2Dcom_1_{self.run}.nc"
-        )
-        self.path_field_3d = (
-            data_folder_path
-            + f"{self.run}/3D_FILES/RCE_shear_U{self.velocity}_H{self.depth_shear}_64_0000302400.com3D.alltimes_{self.run}.nc"
-        )
+        self.data_folder_paths = data_folder_paths
 
-        self.dataset_1d = xr.open_dataset(self.path_field_1d, decode_cf=False)
-        self.dataset_2d = xr.open_dataset(self.path_field_2d, decode_cf=False)
-        self.dataset_3d = xr.open_dataset(self.path_field_3d, decode_cf=False)
+        xr.open_dataset(self.data_folder_paths[0])
+
+        self.dataset_1d = xr.open_dataset(self.data_folder_paths[0], decode_cf=False)
+        self.dataset_2d = xr.open_dataset(self.data_folder_paths[1], decode_cf=False)
+        self.dataset_3d = xr.open_dataset(self.data_folder_paths[2], decode_cf=False)
 
         # self.dataset_1d.close()
         # self.dataset_2d.close()
@@ -63,9 +67,9 @@ class Simulation:
         self.add_variable_to_dataset(
             dataset_name="dataset_3d",
             variable_name="QPEVP",
-            variable_data_path=data_folder_path
+            variable_data_path="/Users/sophieabramian/Desktop/SAM_project/data/"
             + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}"
-            + "_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
+            + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
         )
 
         self.squall_line = SquallLine(
@@ -89,6 +93,7 @@ class Simulation:
             pressure=self.dataset_1d.p,
             depth_shear=self.depth_shear,
             humidity_evp=self.dataset_3d.QPEVP,
+            plot_mode=plot_mode,
         )
 
     def add_variable_to_dataset(
@@ -106,6 +111,11 @@ class Simulation:
         dataset[variable_name] = data_array
 
     def load(self, backup_folder_path):
+        """Load calculated attributes from pickle backup files
+
+        Args:
+            backup_folder_path (str): path to saved file
+        """
         file = open(
             backup_folder_path
             + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
@@ -127,11 +137,11 @@ class Simulation:
         # self.initialize()
 
     def save(self, backup_folder_path):
-        # save netcdf4 data
-        # self.dataset_1D.to_netcdf(path=self.path_fields_1D, mode='w')
-        # self.dataset_2D.to_netcdf(path=self.path_fields_2D, mode='w')
+        """Save current instances of the class except starting datasets
 
-        # save other type of data in pickles
+        Args:
+            backup_folder_path (str): path to the saving file
+        """
         your_blacklisted_set = [
             "dataset_1d",
             "dataset_2d",
@@ -144,13 +154,13 @@ class Simulation:
             for (key, value) in self.__dict__.items()
             if key not in your_blacklisted_set
         ]
-        f = open(
+        file = open(
             backup_folder_path
             + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
             "wb",
         )
-        pickle.dump(dict2, f, 2)
-        f.close()
+        pickle.dump(dict2, file, 2)
+        file.close()
 
         self.squall_line.save(
             backup_folder_path

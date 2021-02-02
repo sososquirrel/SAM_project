@@ -1,4 +1,4 @@
-"""huk"""
+"""Useful functions for any class"""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,8 +6,7 @@ from multiprocess import Pool
 
 
 def make_parallel(function, nprocesses):
-    """
-    Works similar to a decorator to paralelize "stupidly parallel"
+    """Works similar to a decorator to paralelize "stupidly parallel"
     problems. Decorators and multiprocessing don't play nicely because
     of naming issues.
 
@@ -35,6 +34,7 @@ def make_parallel(function, nprocesses):
         iterable_values_2=None,
         **kwargs,
     ):
+        # pylint: disable=E1102
         args = list(args)
         processes_pool = Pool(nprocesses)
 
@@ -122,3 +122,31 @@ def color(velocity: str):
 
     cmap = plt.cm.get_cmap("hsv")
     return cmap(float(velocity) / 20)
+
+
+def generate_1d_2d_3d_paths(run: str, velocity: str, depth_shear: str, data_folder_path: str):
+    """Generates paths to 1D, 2D and 3D data fields
+
+    Args:
+        run (str): Name of the simulation set
+        velocity (str): Basal velocity of the linear wind shear profile
+        depth_shear (str): Depth of shear of the linear wind shear profiles
+        data_folder_path (str): Parent folder where all datasets are
+
+    Returns:
+        TYPE: List of 3 paths [path_field_1d, path_field_2d, path_field_3d]
+    """
+    path_field_1d = (
+        data_folder_path + f"{run}/1D_FILES/RCE_shear_U{velocity}_H{depth_shear}_{run}.nc"
+    )
+    path_field_2d = (
+        data_folder_path
+        + f"/{run}/2D_FILES/RCE_shear_U{velocity}_H{depth_shear}_64.2Dcom_1_{run}.nc"
+    )
+
+    path_field_3d = (
+        data_folder_path
+        + f"{run}/3D_FILES/RCE_shear_U{velocity}_H{depth_shear}_64_0000302400.com3D.alltimes_{run}.nc"
+    )
+
+    return path_field_1d, path_field_2d, path_field_3d

@@ -1,4 +1,4 @@
-"""config file"""
+"""All constant and arbitrary variables are defined here"""
 
 import multiprocessing
 

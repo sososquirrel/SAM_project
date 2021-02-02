@@ -1,13 +1,11 @@
-"""Base functions for angle detection"""
-
-import time
+"""Base functions to measure the orientation angle of a squal line"""
 
 import numpy as np
 from scipy import signal
 
 
 def rotate_sigma(sigma: np.array, theta: float) -> np.array:
-    """Summary
+    """Returns a 2d gaussian with the principle axis oriented to theta compared to the horizontal
 
     Args:
         sigma (np.array): covariance in standard base
@@ -67,7 +65,7 @@ def multivariate_gaussian(pos: np.array, mu: np.array, sigma: np.array) -> np.ar
 
 
 def normalized_autocorrelation(image: np.array) -> np.array:
-    """retunrs autocorrelation from image
+    """Retunrs autocorrelation from image
 
     Args:
         image (np.array): 2D image for which correlation will be computed
@@ -93,15 +91,18 @@ def normalized_autocorrelation(image: np.array) -> np.array:
 def convolution_with_gaussian(
     autocorrelation_image: np.array, theta: float, mu: np.array, sigma: np.array
 ) -> float:
-    """scalar product between autocorrelation image and a gaussian with certain angle theta
+    """Scalar product between autocorrelation image and a gaussian with certain angle theta
 
     Args:
-        image (np.array): image
+        autocorrelation_image (np.array): Description
         theta (float): angle of gaussian
         mu (np.array): mean of gaussian
         sigma (np.array): variance of gaussian
 
-    Returns:
+    Deleted Parameters:
+        image (np.array): image
+
+    No Longer Returned:
         float: scalar product between autocorrelation image and a gaussian with certain angle theta
     """
 
@@ -128,7 +129,7 @@ def convolution_with_gaussian(
 def multi_angle_instant_convolution(
     image: np.array, theta_range: np.array, mu: np.array, sigma: np.array
 ) -> np.array:
-    """computes the values of convolution for multiple angles
+    """Computes the values of convolution for multiple angles
 
     Args:
         image (np.array): image
