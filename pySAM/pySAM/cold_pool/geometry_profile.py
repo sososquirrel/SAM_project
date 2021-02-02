@@ -27,7 +27,7 @@ def cold_pool_contour(
     X, Z = np.meshgrid(x_array[x_max_precip - 40 : x_max_precip + 41], z_array)
 
     contours = plt.contour(X, Z, data_array, [cold_pool_threshold])
-    plt.clear()
+    plt.close()
 
     list_index_guess_cold_pool = []
     for i in range(len(contours.allsegs[0])):
