@@ -29,12 +29,18 @@ jobs:
         flake8 pySAM/pySAM --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 pySAM/pySAM --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Pylint
-      run: |
-        cd pySAM
-        pylint pySAM
     - name: Test with pytest
       env:
         PYTHONPATH: "./pySAM/"
       run: |
         pytest
+    - name: Pytest Coverage
+      #env:
+      #PYTHONPATH: "./pySAM/"
+      run: |
+        pytest --cov=pySAM
+    - name: Pylint
+      run: |
+        cd pySAM
+        pylint pySAM
+
