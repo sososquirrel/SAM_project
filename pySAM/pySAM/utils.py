@@ -2,7 +2,6 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
 from multiprocess import Pool
 
 
@@ -32,8 +31,8 @@ def make_parallel(function, nprocesses):
 
     def apply(
         iterable_values_1,
-        iterable_values_2=None,
         *args,
+        iterable_values_2=None,
         **kwargs,
     ):
         args = list(args)
@@ -76,7 +75,7 @@ def expand_array_to_tzyx_array(
     if len(final_shape) != 4:
         raise ValueError("Output must be (t,z,y,x) type")
 
-    if time_dependence == False:
+    if not time_dependence:
         if len(input_array.shape) != 1:
             raise ValueError("Input array with no time dependence must be one-dimensionnal")
 
@@ -108,7 +107,7 @@ def expand_array_to_tzyx_array(
     return output_array
 
 
-def color(velocity: str, depth: str):
+def color(velocity: str):
     """Returns a specific color for each simulation, very convenient for plot
 
     Args:
@@ -120,6 +119,6 @@ def color(velocity: str, depth: str):
     """
     if velocity == "0":
         return "grey"
-    else:
-        cmap = plt.cm.get_cmap("hsv")
-        return cmap(float(velocity) / 20)
+
+    cmap = plt.cm.get_cmap("hsv")
+    return cmap(float(velocity) / 20)

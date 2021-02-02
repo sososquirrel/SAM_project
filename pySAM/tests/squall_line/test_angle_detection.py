@@ -26,28 +26,26 @@ def test_multivariate_gaussian():
 
     multivariate_gaussian(pos, mu, sigma)
     print(multivariate_gaussian(pos, mu, sigma).shape)
-    plt.imshow(multivariate_gaussian(pos, mu, sigma))
-    plt.show()
-    plt.imshow(multivariate_gaussian(pos, mu, sigma_rot))
-    plt.show()
 
 
 # test_multivariate_gaussian()
+if __name__ == "__main__":
 
+    for theta in np.linspace(0, np.pi, 10):
+        sigma = rotate_sigma(sigma=pySAM.SIGMA_GAUSSIAN, theta=theta)
 
-for theta in np.linspace(0, np.pi, 10):
-    sigma = rotate_sigma(sigma=pySAM.SIGMA_GAUSSIAN, theta=theta)
+        x = np.linspace(-3, 3, 50)
+        y = np.linspace(-3, 3, 50)
+        x, y = np.meshgrid(x, y)
 
-    x = np.linspace(-3, 3, 50)
-    y = np.linspace(-3, 3, 50)
-    x, y = np.meshgrid(x, y)
+        # positions will store x,y coordinates of desired points
+        positions = np.empty(x.shape + (2,))
+        positions[:, :, 0] = x
+        positions[:, :, 1] = y
 
-    # positions will store x,y coordinates of desired points
-    positions = np.empty(x.shape + (2,))
-    positions[:, :, 0] = x
-    positions[:, :, 1] = y
+        gaussian_filter = multivariate_gaussian(
+            pos=positions, mu=pySAM.MU_GAUSSIAN, sigma=sigma
+        )
 
-    gaussian_filter = multivariate_gaussian(pos=positions, mu=pySAM.MU_GAUSSIAN, sigma=sigma)
-
-    plt.imshow(gaussian_filter)
-    plt.show()
+        plt.imshow(gaussian_filter)
+        plt.show()

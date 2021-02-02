@@ -2,9 +2,6 @@
 
 import pickle
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pySAM
 import xarray as xr
 from pySAM.cold_pool.cold_pool import ColdPool
 from pySAM.squall_line.squall_line import SquallLine
@@ -61,13 +58,14 @@ class Simulation:
         # self.dataset_2d.close()
         # self.dataset_3d.close()
 
-        self.color = color(self.velocity, self.depth_shear)
+        self.color = color(self.velocity)
 
         self.add_variable_to_dataset(
             dataset_name="dataset_3d",
             variable_name="QPEVP",
             variable_data_path=data_folder_path
-            + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
+            + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}"
+            + "_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
         )
 
         self.squall_line = SquallLine(
@@ -108,13 +106,13 @@ class Simulation:
         dataset[variable_name] = data_array
 
     def load(self, backup_folder_path):
-        f = open(
+        file = open(
             backup_folder_path
             + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
             "rb",
         )
-        tmp_dict = pickle.load(f)
-        f.close()
+        tmp_dict = pickle.load(file)
+        file.close()
         self.__dict__.update(tmp_dict)
 
         self.squall_line.load(

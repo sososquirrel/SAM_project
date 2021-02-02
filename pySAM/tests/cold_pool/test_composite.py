@@ -125,4 +125,6 @@ def test_extreme_index():
     print(test_1_perc_3d)
 
 
-test_extreme_index()
+if __name__ == "__main__":
+
+    test_extreme_index()

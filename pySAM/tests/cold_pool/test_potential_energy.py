@@ -5,16 +5,9 @@ import pytest
 data_array = np.zeros((15, 20))  # idealized cold pool
 data_array[0:5, 10:18] = -1
 data_array[6, 12] = -1
-
-print(data_array)
-
 z_array = np.linspace(0, 14, 15)
-
 depth_shear = "5"
-
 x_size = 10
-
-plt.imshow(data_array)
 
 
 def test_hight_max_index():
@@ -67,7 +60,11 @@ def test_potential_energy():
     return -np.array(potential_energy_array)
 
 
-print(test_potential_energy())
+if __name__ == "__main__":
 
-plt.plot(test_potential_energy())
-plt.show()
+    plt.imshow(data_array)
+
+    print(test_potential_energy())
+
+    plt.plot(test_potential_energy())
+    plt.show()

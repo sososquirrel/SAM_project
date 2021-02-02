@@ -5,6 +5,7 @@ import pickle
 import numpy as np
 import pySAM
 from pySAM.cold_pool.composite import instant_mean_extraction_data_over_extreme
+from pySAM.cold_pool.geometry_profil import geometry_profil
 from pySAM.cold_pool.potential_energy import potential_energy
 from pySAM.utils import make_parallel
 
@@ -225,6 +226,32 @@ class ColdPool:
         composite_variable = np.mean(composite_variable, axis=0)
 
         setattr(self, data_name + "_composite", composite_variable)
+
+    def set_geometry_profil(
+        self,
+        data_name: str,
+        threshold: float,
+    ):
+
+        if "_composite" not in data_name:
+            raise ValueError("data must be composite variable")
+
+        data_array = getattr(self, data_name)
+
+        geometry_profil_line = geometry_profil(
+            data_array=data_array,
+            x_array=self.X,
+            z_array=self.Z,
+            cold_pool_threshold=threshold,
+            vertical_level_0=pySAM.LOWEST_ATMOSPHERIC_LEVEL,
+        )
+
+        setattr(self, "profil_" + str(int(abs(threshold * 1000))), geometry_profil_line)
+        setattr(
+            self,
+            "mean_height_" + str(int(abs(threshold * 1000))),
+            np.mean(geometry_profil_line[1]),
+        )
 
     def set_potential_energy(self, data_name: str, x_size: int) -> np.array:
 
