@@ -2,6 +2,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import xarray as xr
 from multiprocess import Pool
 
 
@@ -150,3 +151,17 @@ def generate_1d_2d_3d_paths(run: str, velocity: str, depth_shear: str, data_fold
     )
 
     return path_field_1d, path_field_2d, path_field_3d
+
+
+def create_reduced_nb_timestep_netcdf4_for_test(
+    input_netcdf4_file: str, output_name: str
+):  # pragma: no cover
+    """Create a very small netcdf4 file for testing only
+
+    Args:
+        input_netcdf4_file (str): path for the big netcdf4 file
+        output_name (str): name of the ouput netcdf4 file
+    """
+    data = xr.open_dataset(input_netcdf4_file, decode_cf=False)
+    dataset_out = data.loc[dict(time=[30.0, 30.04167, 30.08333])]
+    dataset_out.to_netcdf(output_name)

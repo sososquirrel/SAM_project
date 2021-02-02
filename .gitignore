@@ -136,7 +136,7 @@ dmypy.json
 **/*.png
 **/*.jpg
 **/*.jpeg
-**/*.nc
+#**/*.nc because of test data
 **/*.rtf
 **/*.pdf
 

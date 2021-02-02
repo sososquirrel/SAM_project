@@ -1,8 +1,8 @@
 from pySAM.simulation import Simulation
 
-path1 = "test_data/RCE_shear_U10_H1000_squall4.nc"
-path2 = "test_data/RCE_shear_U10_H1000_64.2Dcom_1_squall4.nc"
-path3 = "test_data/RCE_shear_U10_H1000_64_0000302400.com3D.alltimes_squall4.nc"
+path1 = "test_data/test_dataset_1D.nc"
+path2 = "test_data/test_dataset_2D.nc"
+path3 = "test_data/test_dataset_3D.nc"
 
 paths = [path1, path2, path3]
 
@@ -16,8 +16,7 @@ def test_Simulation():
         velocity=velocity,
         depth_shear="1000",
     )
-
-def test_
+    print(simulation.cold_pool.U)
 
 
 if __name__ == "__main__":
