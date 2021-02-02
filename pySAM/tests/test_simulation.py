@@ -1,8 +1,8 @@
 from pySAM.simulation import Simulation
 
-path1 = "tests/test_data/test_dataset_1D.nc"
-path2 = "tests/test_data/test_dataset_2D.nc"
-path3 = "tests/test_data/test_dataset_3D.nc"
+path1 = "pySAM/tests/test_data/test_dataset_1D.nc"
+path2 = "pySAM/tests/test_data/test_dataset_2D.nc"
+path3 = "pySAM/tests/test_data/test_dataset_3D.nc"
 
 paths = [path1, path2, path3]
 
