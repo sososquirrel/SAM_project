@@ -9,4 +9,5 @@ numpy
 xarray
 matplotlib
 scipy
+netcdf4
 multiprocess
