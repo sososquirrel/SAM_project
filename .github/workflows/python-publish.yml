@@ -23,11 +23,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest pylint
         if [ -f pySAM/requirements.txt ]; then pip install -r pySAM/requirements.txt; fi
-    - name: Lint with flake8
-      run: |
-        cd pySAM
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 pySAM --show-source --statistics
     - name: Pytest with Coverage
       env:
         PYTHONPATH: "./pySAM/"
