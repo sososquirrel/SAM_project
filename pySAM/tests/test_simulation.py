@@ -8,7 +8,7 @@ paths = [path1, path2, path3]
 
 velocity = "10"
 
-
+"""
 def test_Simulation():
     simulation = Simulation(
         data_folder_paths=paths,
@@ -16,7 +16,7 @@ def test_Simulation():
         velocity=velocity,
         depth_shear="1000",
     )
-    print(simulation.cold_pool.U)
+    print(simulation.cold_pool.U)"""
 
 
 if __name__ == "__main__":
