@@ -29,20 +29,22 @@ if __name__ == "__main__":
             depth_shear="1000",
         )
 
+        """
         print("calcul of max variance")
 
         simulation.squall_line.set_maximum_variance_step(data_name="PW")
 
         print("calcul of angle distribution")
+        """
 
         simulation.squall_line.set_distribution_angles(
             data_name="PW",
             angles_range=pySAM.THETA_ARRAY,
             mu=pySAM.MU_GAUSSIAN,
             sigma=pySAM.SIGMA_GAUSSIAN,
-            parallelize=False,
+            parallelize=True,
         )
-
+        """
         print("calcul of composite variable")
 
         for data_name in ["BUOYANCY", "QPEVP", "W", "QN", "VORTICITY"]:
@@ -65,3 +67,4 @@ if __name__ == "__main__":
             )
 
         simulation.save(BACKUP_FOLDER_PATH)
+        """

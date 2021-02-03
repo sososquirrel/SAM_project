@@ -13,6 +13,7 @@ GRAVITY = 9.8  # (m/s2)
 # computer constant
 N_CPU = multiprocessing.cpu_count()
 
+
 # air properties
 HEAT_CAPACITY_AIR = 1004  # (J/K/kg)
 LATENT_HEAT_AIR = 2.5 * 10 ** 6  # (J/kg)

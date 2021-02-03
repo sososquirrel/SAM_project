@@ -1,10 +1,10 @@
 """Useful functions for any class"""
 
-from multiprocessing import Pool
 
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
+from multiprocess import Pool
 
 
 def make_parallel(function, nprocesses):
@@ -41,22 +41,21 @@ def make_parallel(function, nprocesses):
         processes_pool = Pool(nprocesses)
 
         if iterable_values_2 is not None:
-            result = [
+            results = [
                 processes_pool.apply_async(function, args=[value1, value2] + args, kwds=kwargs)
                 for (value1, value2) in zip(iterable_values_1, iterable_values_2)
             ]
 
-        if iterable_values_2 is None:
-            result = [
+        elif iterable_values_2 is None:
+            results = [
                 processes_pool.apply_async(function, args=[value1] + args, kwds=kwargs)
                 for value1 in iterable_values_1
             ]
 
         processes_pool.close()
-        return [r.get() for r in result]
+        # processes_pool.terminate()
 
-    # [p.apply_async(function, args=[value] + args, kwds=kwargs) for value in iterable_values]
-    # p.close()
+        return [r.get() for r in results]
 
     return apply
 

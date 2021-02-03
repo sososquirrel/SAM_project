@@ -105,7 +105,7 @@ class SquallLine:
             )
 
             angles_distribution = parallel_multi_angle(
-                iterable_values_1=getattr(self, data_name),
+                iterable_values_1=getattr(self, data_name).values,
                 theta_range=angles_range,
                 mu=mu,
                 sigma=sigma,

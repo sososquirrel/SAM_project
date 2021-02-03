@@ -228,8 +228,8 @@ class ColdPool:
                 function=instant_mean_extraction_data_over_extreme, nprocesses=pySAM.N_CPU
             )
             composite_variable = parallel_composite(
-                iterable_values_1=getattr(self, data_name),
-                iterable_values_2=getattr(self, variable_to_look_for_extreme),
+                iterable_values_1=getattr(self, data_name).values,
+                iterable_values_2=getattr(self, variable_to_look_for_extreme).values,
                 extreme_events_choice=extreme_events_choice,
                 x_margin=x_margin,
                 y_margin=y_margin,
