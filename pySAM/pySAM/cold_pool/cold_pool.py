@@ -94,12 +94,37 @@ class ColdPool:
         """
 
         # SELECT ONLY attributes whose names are in lower cases
-        dictionary = [
-            (key, value) for (key, value) in self.__dict__.items() if not key.isupper()
-        ]
+        # dictionary = [
+        #    (key, value) for (key, value) in self.__dict__.items() if not key.isupper()
+        # ]
 
+        # with open(path_to_save + ".pickle", "wb") as handle:
+        #  pickle.dump(dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+        your_blacklisted_set = [
+            "TABS",
+            "PRECi",
+            "X",
+            "Y",
+            "Z",
+            "U",
+            "W",
+            "QN",
+            "QV",
+            "P",
+            "QPEVP",
+            "FMSE",
+            "VIRTUAL_TEMPERATURE",
+            "BUOYANCY",
+            "VORTICITY",
+        ]
+        dict2 = [
+            (key, value)
+            for (key, value) in self.__dict__.items()
+            if key not in your_blacklisted_set
+        ]
         file = open(path_to_save, "wb")
-        pickle.dump(dictionary, file, 2)
+        pickle.dump(dict2, file, 2)
         file.close()
 
     def load(self, path_to_load: str):

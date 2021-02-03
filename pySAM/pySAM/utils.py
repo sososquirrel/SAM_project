@@ -1,9 +1,10 @@
 """Useful functions for any class"""
 
+from multiprocessing import Pool
+
 import matplotlib.pyplot as plt
 import numpy as np
 import xarray as xr
-from multiprocess import Pool
 
 
 def make_parallel(function, nprocesses):
