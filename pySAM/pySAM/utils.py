@@ -36,11 +36,27 @@ def make_parallel(function, nprocesses):
         iterable_values_2=None,
         **kwargs,
     ):
+        if type(iterable_values_1) not in [list, np.array, xr.core.dataarray.DataArray]:
+            raise ValueError(
+                "Your first iterable value type is not standard, must be in [list, np.array, xarray.core.dataarray.DataArray]"
+            )
+
+        if type(iterable_values_1) not in [list, np.array]:
+            iterable_values_1 = iterable_values_1.values
+
         # pylint: disable=E1102
         args = list(args)
         processes_pool = Pool(nprocesses)
 
         if iterable_values_2 is not None:
+            if type(iterable_values_2) not in [list, np.array, xr.core.dataarray.DataArray]:
+                raise ValueError(
+                    "Your second iterable value type is not standard, must be in [list, np.array, xarray.core.dataarray.DataArray]"
+                )
+
+            if type(iterable_values_2) not in [list, np.array]:
+                iterable_values_2 = iterable_values_2.values
+
             results = [
                 processes_pool.apply_async(function, args=[value1, value2] + args, kwds=kwargs)
                 for (value1, value2) in zip(iterable_values_1, iterable_values_2)

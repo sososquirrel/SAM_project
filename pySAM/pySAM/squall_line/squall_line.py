@@ -50,15 +50,13 @@ class SquallLine:
         Args:
             path_to_save (str): path to the saving file
         """
-        # dictionary = [
-        #   (key, value) for (key, value) in self.__dict__.items() if not key.isupper()
-        # ]
-
-        black_list = ["PW", "PRECi", "U", "W"]
-
-        dictionary = [
-            (key, value) for (key, value) in self.__dict__.items() if key not in black_list
+        black_list = [
+            key for (key, value) in self.__dict__.items() if (key.isupper() or key == "PRECi")
         ]
+
+        dictionary = {
+            key: value for (key, value) in self.__dict__.items() if key not in black_list
+        }
 
         file = open(path_to_save, "wb")
         pickle.dump(dictionary, file, 2)
@@ -105,7 +103,7 @@ class SquallLine:
             )
 
             angles_distribution = parallel_multi_angle(
-                iterable_values_1=getattr(self, data_name).values,
+                iterable_values_1=getattr(self, data_name),
                 theta_range=angles_range,
                 mu=mu,
                 sigma=sigma,

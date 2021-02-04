@@ -12,7 +12,7 @@ if __name__ == "__main__":
         "/Users/sophieabramian/Desktop/SAM_project/simulation_instances_backup/"
     )
 
-    for velocity in ["7.5", "10", "12.5", "15", "17.5", "20"]:
+    for velocity in ["17.5"]:
         print(velocity)
 
         DATA_FOLDER_PATHS = generate_1d_2d_3d_paths(
@@ -29,13 +29,15 @@ if __name__ == "__main__":
             depth_shear="1000",
         )
 
+        simulation.load(BACKUP_FOLDER_PATH)
+        simulation.save(BACKUP_FOLDER_PATH)
         """
         print("calcul of max variance")
 
         simulation.squall_line.set_maximum_variance_step(data_name="PW")
 
         print("calcul of angle distribution")
-        """
+
 
         simulation.squall_line.set_distribution_angles(
             data_name="PW",
@@ -44,7 +46,7 @@ if __name__ == "__main__":
             sigma=pySAM.SIGMA_GAUSSIAN,
             parallelize=True,
         )
-        """
+
         print("calcul of composite variable")
 
         for data_name in ["BUOYANCY", "QPEVP", "W", "QN", "VORTICITY"]:

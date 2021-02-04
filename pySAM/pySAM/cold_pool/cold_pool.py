@@ -94,37 +94,41 @@ class ColdPool:
         """
 
         # SELECT ONLY attributes whose names are in lower cases
-        # dictionary = [
-        #    (key, value) for (key, value) in self.__dict__.items() if not key.isupper()
-        # ]
+        black_list = [
+            key for (key, value) in self.__dict__.items() if (key.isupper() or key == "PRECi")
+        ]
+
+        dictionary = {
+            key: value for (key, value) in self.__dict__.items() if key not in black_list
+        }
 
         # with open(path_to_save + ".pickle", "wb") as handle:
         #  pickle.dump(dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-        your_blacklisted_set = [
-            "TABS",
-            "PRECi",
-            "X",
-            "Y",
-            "Z",
-            "U",
-            "W",
-            "QN",
-            "QV",
-            "P",
-            "QPEVP",
-            "FMSE",
-            "VIRTUAL_TEMPERATURE",
-            "BUOYANCY",
-            "VORTICITY",
-        ]
-        dict2 = [
-            (key, value)
-            for (key, value) in self.__dict__.items()
-            if key not in your_blacklisted_set
-        ]
+        # your_blacklisted_set = [
+        #     "TABS",
+        #     "PRECi",
+        #     "X",
+        #     "Y",
+        #     "Z",
+        #     "U",
+        #     "W",
+        #     "QN",
+        #     "QV",
+        #     "P",
+        #     "QPEVP",
+        #     "FMSE",
+        #     "VIRTUAL_TEMPERATURE",
+        #     "BUOYANCY",
+        #     "VORTICITY",
+        # ]
+        # dict2 = [
+        #     (key, value)
+        #     for (key, value) in self.__dict__.items()
+        #     if key not in your_blacklisted_set
+        # ]
         file = open(path_to_save, "wb")
-        pickle.dump(dict2, file, 2)
+        pickle.dump(dictionary, file, 2)
         file.close()
 
     def load(self, path_to_load: str):
@@ -228,8 +232,8 @@ class ColdPool:
                 function=instant_mean_extraction_data_over_extreme, nprocesses=pySAM.N_CPU
             )
             composite_variable = parallel_composite(
-                iterable_values_1=getattr(self, data_name).values,
-                iterable_values_2=getattr(self, variable_to_look_for_extreme).values,
+                iterable_values_1=getattr(self, data_name),
+                iterable_values_2=getattr(self, variable_to_look_for_extreme),
                 extreme_events_choice=extreme_events_choice,
                 x_margin=x_margin,
                 y_margin=y_margin,
