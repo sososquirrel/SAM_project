@@ -1,6 +1,7 @@
 """Base functions for computing potential energy"""
 
 import numpy as np
+import xarray as xr
 
 
 def hight_max_index(z_array: np.array, depth_shear: str) -> int:
@@ -22,8 +23,56 @@ def hight_max_index(z_array: np.array, depth_shear: str) -> int:
     return cold_pool_hight_max_index
 
 
+# def potential_energy(
+#     data_array: np.array, z_array: np.array, x_size: int, depth_shear: str
+# ) -> np.array:
+#     """Return the energy potential of cold pool as a function of x, the imposed flow direction.
+#     Common input is buoyancy composite, but you can also use temperature anomaly.
+#     X is a regular spaced array, that start at the extreme left of the cold
+#     (generally the maximum of precipitation), and end 10's km to the right.
+#     The output is the intgerale of buoyancy composite over the cold pool domains
+
+#     Args:
+#         data_array (np.array): Buoyancy composite, temperature composite, of shape (nz,nx). data_array[nx//2]
+#                                 must be max of precipitation
+#         z_array (np.array): vertical array, of shape (nz,)
+#         x_size (int): typically half of the length of your cold pool in x direction
+#         depth_shear (str): cold pools are known to scale depth shear, 1.5 of depth shear
+#                             will be the upper boudnary for integration
+
+#     Returns:
+#         potential_energy_array (np.array) : energy potential off the cold pool as a funciton of x, of shape (x_size,)
+
+#     """
+#     potential_energy_array = []
+
+#     x_max_precip = int(
+#         data_array.shape[1] / 2
+#     )  # remainder : the input must be centered in the maximum precipitation
+
+#     cold_pool_hight_max_index = hight_max_index(z_array=z_array, depth_shear=depth_shear)
+
+#     for x_index in range(x_size):
+#         data_array_x = data_array[:cold_pool_hight_max_index, x_max_precip + x_index]
+
+#         if len(np.where(data_array_x < 0)[0]) == 0:
+#             potential_energy_x = 0
+
+#         else:
+#             y_intersect_index = np.where(data_array_x < -0.0005)[0][-1]
+
+#             z_diff = np.diff(z_array[: y_intersect_index + 1])
+
+#             potential_energy_x = np.sum(
+#                 -data_array[:y_intersect_index, x_max_precip + x_index] * z_diff
+#             )
+#         potential_energy_array.append(potential_energy_x)
+
+#     return np.array(potential_energy_array)
+
+
 def potential_energy(
-    data_array: np.array, z_array: np.array, x_size: int, depth_shear: str
+    data_array: np.array, z_array: np.array, geometry_profile: list
 ) -> np.array:
     """Return the energy potential of cold pool as a function of x, the imposed flow direction.
     Common input is buoyancy composite, but you can also use temperature anomaly.
@@ -43,28 +92,24 @@ def potential_energy(
         potential_energy_array (np.array) : energy potential off the cold pool as a funciton of x, of shape (x_size,)
 
     """
+
+    if type(data_array) == xr.core.dataarray.DataArray:
+        data_array = data_array.values
+
     potential_energy_array = []
 
-    x_max_precip = int(
-        data_array.shape[1] / 2
-    )  # remainder : the input must be centered in the maximum precipitation
+    for x_step, __ in enumerate(geometry_profile[0]):
+        data_array_x = data_array[:, x_step]
 
-    cold_pool_hight_max_index = hight_max_index(z_array=z_array, depth_shear=depth_shear)
-
-    for x_index in range(x_size):
-        data_array_x = data_array[:cold_pool_hight_max_index, x_max_precip + x_index]
-
-        if len(np.where(data_array_x < 0)[0]) == 0:
+        if geometry_profile[0][x_step] == np.min(geometry_profile[0]):
             potential_energy_x = 0
 
         else:
-            y_intersect_index = np.where(data_array_x < -0.0005)[0][-1]
+            y_intersect_index = np.abs(z_array - geometry_profile[1][x_step]).argmin()
 
             z_diff = np.diff(z_array[: y_intersect_index + 1])
 
-            potential_energy_x = np.sum(
-                -data_array[:y_intersect_index, x_max_precip + x_index] * z_diff
-            )
+            potential_energy_x = np.sum(-data_array[:y_intersect_index, x_step] * z_diff)
         potential_energy_array.append(potential_energy_x)
 
     return np.array(potential_energy_array)

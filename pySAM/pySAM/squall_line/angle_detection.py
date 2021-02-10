@@ -1,5 +1,7 @@
 """Base functions to measure the orientation angle of a squal line"""
 
+import collections
+
 import numpy as np
 from scipy import signal
 
@@ -152,3 +154,14 @@ def multi_angle_instant_convolution(
         )
 
     return np.array(convolution_values)
+
+
+def distribution_sampling(data_value: list, most_common_limit: int = 5):
+
+    counter_dict = collections.Counter(data_value)
+    most_common_list = counter_dict.most_common(most_common_limit)
+
+    mean_result = np.mean(np.array([key for key, __ in most_common_list]))
+    deviation_result = np.sqrt(np.var(np.array([key for key, __ in most_common_list])))
+
+    return (mean_result, deviation_result)

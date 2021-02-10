@@ -4,7 +4,8 @@ import pickle
 
 import numpy as np
 import pySAM
-from pySAM.squall_line.angle_detection import multi_angle_instant_convolution
+from pySAM.squall_line.angle_detection import (distribution_sampling,
+                                               multi_angle_instant_convolution)
 from pySAM.utils import make_parallel
 
 
@@ -119,25 +120,46 @@ class SquallLine:
                     )
                 )
 
-        self.distribution_angles = np.mean(np.array(angles_distribution), axis=0)
-
-        self.angle_degrees = (
-            (
-                angles_range[
-                    np.where(self.distribution_angles == np.max(self.distribution_angles))[0]
-                ]
-                - np.pi / 2
-            )
-            * 180
-            / np.pi
-        )
-
-        self.angle_radian = (
-            angles_range[
-                np.where(self.distribution_angles == np.max(self.distribution_angles))[0]
+        self.recurrent_theta = [
+            np.absolute(theta - np.pi / 2)
+            for i in range(len(angles_distribution))
+            for theta in angles_range[
+                np.where(
+                    np.array(angles_distribution)[i]
+                    > np.percentile(np.array(angles_distribution)[i], 90)
+                )
             ]
-            - np.pi / 2
-        )
+        ]
+
+        angle, deviation = distribution_sampling(data_value=self.recurrent_theta)
+
+        self.angle_radian = angle
+
+        self.angle_degrees = self.angle_radian * 180 / np.pi
+
+        self.angle_deviation_radian = deviation
+
+        self.angle_deviation_degrees = self.angle_deviation_radian * 180 / np.pi
+
+        # self.mean_distribution_angles = np.mean(np.array(angles_distribution), axis=0)
+
+        # self.angle_degrees = (
+        #     (
+        #         angles_range[
+        #             np.where(self.distribution_angles == np.max(self.distribution_angles))[0]
+        #         ]
+        #         - np.pi / 2
+        #     )
+        #     * 180
+        #     / np.pi
+        # )
+
+        # self.angle_radian = (
+        #     angles_range[
+        #         np.where(self.distribution_angles == np.max(self.distribution_angles))[0]
+        #     ]
+        #     - np.pi / 2
+        # )
 
     def set_maximum_variance_step(self, data_name: str):
         """Returns the timestep where the squall lines is the most

@@ -123,6 +123,7 @@ def instant_mean_extraction_data_over_extreme(
         x_margin (int): Description
         y_margin (int, optional): Description
     """
+
     if len(data.shape) not in [2, 3]:
         raise ValueError("data must be either 2D or 3D")
 
@@ -154,6 +155,7 @@ def instant_mean_extraction_data_over_extreme(
         return instant_data_over_extreme
 
     else:  # len(data.shape) == 2
+
         x_index_middle_array = extreme_index(
             nb_dim_data=2,
             variable_to_look_for_extreme=variable_to_look_for_extreme,
@@ -165,7 +167,7 @@ def instant_mean_extraction_data_over_extreme(
         )
 
         if len(instant_data_over_extreme) == 1:
-            return instant_data_over_extreme
+            return np.mean(instant_data_over_extreme[0], axis=1)
 
         instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=(0, 1))
         # instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=1)

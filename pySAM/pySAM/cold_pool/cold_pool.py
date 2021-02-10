@@ -56,7 +56,9 @@ class ColdPool:
         pressure: np.array,
         depth_shear: str,
         humidity_evp: np.array,
-        plot_mode: bool = False,  # plot_mode=True to partially load dataset and earn time
+        humidity_evp_2d: np.array = None,
+        humidity_evp_2d_i: np.array = None,
+        plot_mode: bool = False,  # plot_mode=True to partially load dataset and earn time,
     ):
 
         self.depth_shear = depth_shear
@@ -71,6 +73,8 @@ class ColdPool:
         self.QV = humidity / 1000  # must be kg/kg
         self.P = pressure
         self.QPEVP = humidity_evp
+        self.QPEVP_2D = humidity_evp_2d
+        self.QPEVPi = humidity_evp_2d_i
 
         self.nx = len(self.X)
         self.ny = len(self.Y)
@@ -102,31 +106,6 @@ class ColdPool:
             key: value for (key, value) in self.__dict__.items() if key not in black_list
         }
 
-        # with open(path_to_save + ".pickle", "wb") as handle:
-        #  pickle.dump(dictionary, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-        # your_blacklisted_set = [
-        #     "TABS",
-        #     "PRECi",
-        #     "X",
-        #     "Y",
-        #     "Z",
-        #     "U",
-        #     "W",
-        #     "QN",
-        #     "QV",
-        #     "P",
-        #     "QPEVP",
-        #     "FMSE",
-        #     "VIRTUAL_TEMPERATURE",
-        #     "BUOYANCY",
-        #     "VORTICITY",
-        # ]
-        # dict2 = [
-        #     (key, value)
-        #     for (key, value) in self.__dict__.items()
-        #     if key not in your_blacklisted_set
-        # ]
         file = open(path_to_save, "wb")
         pickle.dump(dictionary, file, 2)
         file.close()
@@ -222,8 +201,10 @@ class ColdPool:
             y_margin (int, optional): depth of window zoom
             parallelize (bool, optional): use all your cpu power
         """
-        if data_name not in ["W", "QN", "VORTICITY", "BUOYANCY", "QPEVP"]:
-            raise ValueError("data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP]")
+        if data_name not in ["W", "QN", "VORTICITY", "BUOYANCY", "QPEVP", "QPEVP_2D", "QPEVPi"]:
+            raise ValueError(
+                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi]"
+            )
         if variable_to_look_for_extreme not in ["PRECi"]:
             raise ValueError("variable_to_look_for_extreme must be in [PRECi]")
 
@@ -253,8 +234,10 @@ class ColdPool:
                         y_margin=y_margin,
                     )
                 )
+
         composite_variable = np.array(composite_variable)
         composite_variable = np.mean(composite_variable, axis=0)
+        print(composite_variable)
 
         setattr(self, data_name + "_composite", composite_variable)
 
@@ -276,7 +259,6 @@ class ColdPool:
 
         geometry_profile_line = geometry_profile(
             data_array=data_array,
-            x_array=self.X,
             z_array=self.Z,
             cold_pool_threshold=threshold,
             vertical_level_0=pySAM.LOWEST_ATMOSPHERIC_LEVEL,
@@ -289,7 +271,7 @@ class ColdPool:
             np.mean(geometry_profile_line[1]),
         )
 
-    def set_potential_energy(self, data_name: str, x_size: int) -> np.array:
+    def set_potential_energy(self, data_name: str, profile_name: str) -> np.array:
         """Computes the potentential energy of a cold pool as a function of x.
         For each x, provided data is integrated in z from the bottom to the top of the cold pool.
 
@@ -304,10 +286,11 @@ class ColdPool:
             raise ValueError("data must be composite variable")
 
         data_array = getattr(self, data_name)
+        profile_list = getattr(self, profile_name)
 
         potential_energy_array = potential_energy(
-            data_array=data_array, z_array=self.Z, x_size=x_size, depth_shear=self.depth_shear
+            data_array=data_array, z_array=self.Z.values, geometry_profile=profile_list
         )
 
-        setattr(self, "potential_energy_" + str(x_size), potential_energy_array)
-        setattr(self, "mean_potential_energy_" + str(x_size), np.mean(potential_energy_array))
+        setattr(self, "potential_energy", potential_energy_array)
+        setattr(self, "mean_potential_energy", np.mean(potential_energy_array))
