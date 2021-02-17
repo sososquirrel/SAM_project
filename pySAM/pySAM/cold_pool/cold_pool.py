@@ -187,7 +187,7 @@ class ColdPool:
         variable_to_look_for_extreme: str,
         extreme_events_choice: str,
         x_margin: int,
-        y_margin: int = None,
+        y_margin: int,
         parallelize: bool = True,
     ) -> np.array:
         """Compute the composite, namely the mean over extreme events, of 2d or 3d variables evolving in time

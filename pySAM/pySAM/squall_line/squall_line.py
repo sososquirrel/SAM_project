@@ -93,7 +93,7 @@ class SquallLine:
             parallelize (bool, optional): Use multiprocessing to dispatch tasks over available CPUs
         """
 
-        if data_name not in ["PW", "PRECi", "U", "W"]:
+        if data_name not in ["PW", "PRECi", "U", "W", "W_test"]:
             raise ValueError("data name must be in [PW, PRECi, U, W]")
         if len(angles_range.shape) != 1:
             raise ValueError("angles_range must be 1D")
