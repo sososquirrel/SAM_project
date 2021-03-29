@@ -11,3 +11,5 @@ matplotlib
 scipy
 netcdf4
 multiprocess
+
+streamlit

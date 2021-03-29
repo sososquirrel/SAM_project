@@ -201,12 +201,22 @@ class ColdPool:
             y_margin (int, optional): depth of window zoom
             parallelize (bool, optional): use all your cpu power
         """
-        if data_name not in ["W", "QN", "VORTICITY", "BUOYANCY", "QPEVP", "QPEVP_2D", "QPEVPi"]:
+        if data_name not in [
+            "W",
+            "QN",
+            "VORTICITY",
+            "BUOYANCY",
+            "QPEVP",
+            "QPEVP_2D",
+            "QPEVPi",
+            "QP",
+            "rho_QPEVP",
+        ]:
             raise ValueError(
-                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi]"
+                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi, QP, rho_QPEVP]"
             )
-        if variable_to_look_for_extreme not in ["PRECi"]:
-            raise ValueError("variable_to_look_for_extreme must be in [PRECi]")
+        if variable_to_look_for_extreme not in ["PRECi", "QPEVP_2D"]:
+            raise ValueError("variable_to_look_for_extreme must be in [PRECi, QPEVP_2D]")
 
         if parallelize:
             parallel_composite = make_parallel(
@@ -237,7 +247,6 @@ class ColdPool:
 
         composite_variable = np.array(composite_variable)
         composite_variable = np.mean(composite_variable, axis=0)
-        print(composite_variable)
 
         setattr(self, data_name + "_composite", composite_variable)
 

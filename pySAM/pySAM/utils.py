@@ -136,8 +136,8 @@ def expand_array_to_tzyx_array(
 
         output_array = input_array[:, :, None, None]
 
-        output_array.repeat(final_shape[2], axis=2)
-        output_array.repeat(final_shape[3], axis=3)
+        output_array = np.repeat(output_array, final_shape[2], axis=2)
+        output_array = np.repeat(output_array, final_shape[3], axis=3)
 
     return output_array
 
@@ -156,6 +156,23 @@ def color(velocity: str):
         return "grey"
 
     cmap = plt.cm.get_cmap("hsv")
+    return cmap(float(velocity) / 20)
+
+
+def color2(velocity: str):
+    """Returns a specific color for each simulation, very convenient for plot
+
+    Args:
+        velocity (str): Basal velocity
+        depth (str): Depth of the shear
+
+    Returns:
+        TYPE: cmap color
+    """
+    if velocity == "0":
+        return "grey"
+
+    cmap = plt.cm.get_cmap("plasma")
     return cmap(float(velocity) / 20)
 
 

@@ -84,12 +84,24 @@ def extreme_index(
         variable_to_look_for_extreme (np.array): Description
         extreme_events_choice (str): Description
     """
-    if extreme_events_choice not in ["max", "1-percentile", "10-percentile"]:
+    if extreme_events_choice not in [
+        "max",
+        "1-percentile",
+        "10-percentile",
+        "min",
+        "99-percentile",
+        "90-percentile",
+    ]:
         raise ValueError("extreme_events_choice must be in [max,1-percentile,10-percentile]")
 
     if extreme_events_choice == "max":
         index_middle_array = np.where(
             variable_to_look_for_extreme == np.max(variable_to_look_for_extreme)
+        )
+
+    elif extreme_events_choice == "min":
+        index_middle_array = np.where(
+            variable_to_look_for_extreme == np.min(variable_to_look_for_extreme)
         )
 
     else:
@@ -99,10 +111,21 @@ def extreme_index(
         if extreme_events_choice == "10-percentile":
             percentile_value = 10
 
-        index_middle_array = np.where(
-            variable_to_look_for_extreme
-            > np.percentile(variable_to_look_for_extreme, 100 - percentile_value)
-        )
+            index_middle_array = np.where(
+                variable_to_look_for_extreme
+                > np.percentile(variable_to_look_for_extreme, 100 - percentile_value)
+            )
+
+        if extreme_events_choice == "99-percentile":
+            percentile_value = 99
+
+        if extreme_events_choice == "90-percentile":
+            percentile_value = 90
+
+            index_middle_array = np.where(
+                variable_to_look_for_extreme
+                < np.percentile(variable_to_look_for_extreme, 100 - percentile_value)
+            )
 
     # if nb_dim_data == 2:
     #   return np.unique(index_middle_array[1])

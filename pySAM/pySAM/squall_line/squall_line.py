@@ -133,6 +133,9 @@ class SquallLine:
 
         angle, deviation = distribution_sampling(data_value=self.recurrent_theta)
 
+        print("it is ok")
+        self.angles_distribution_theta_time = np.array(angles_distribution)
+
         self.angle_radian = angle
 
         self.angle_degrees = self.angle_radian * 180 / np.pi

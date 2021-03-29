@@ -5,7 +5,7 @@ import pickle
 import xarray as xr
 from pySAM.cold_pool.cold_pool import ColdPool
 from pySAM.squall_line.squall_line import SquallLine
-from pySAM.utils import color
+from pySAM.utils import color, color2
 
 
 class Simulation:
@@ -58,19 +58,23 @@ class Simulation:
         self.dataset_2d = xr.open_dataset(self.data_folder_paths[1], decode_cf=False)
         self.dataset_3d = xr.open_dataset(self.data_folder_paths[2], decode_cf=False)
 
+        if not hasattr(self.dataset_3d, "QPEVP"):
+
+            self.add_variable_to_dataset(
+                dataset_name="dataset_3d",
+                variable_name="QPEVP",
+                variable_data_path="/Users/sophieabramian/Desktop/SAM_project/data/"
+                + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}"
+                + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
+            )
+
         # self.dataset_1d.close()
         # self.dataset_2d.close()
         # self.dataset_3d.close()
 
         self.color = color(self.velocity)
 
-        self.add_variable_to_dataset(
-            dataset_name="dataset_3d",
-            variable_name="QPEVP",
-            variable_data_path="/Users/sophieabramian/Desktop/SAM_project/data/"
-            + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}"
-            + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
-        )
+        self.color_2 = color2(self.velocity)
 
         self.squall_line = SquallLine(
             precipitable_water=self.dataset_2d.PW,
