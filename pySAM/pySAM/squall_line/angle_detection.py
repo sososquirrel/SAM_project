@@ -2,6 +2,7 @@
 
 import collections
 
+import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
@@ -80,7 +81,7 @@ def normalized_autocorrelation(image: np.array) -> np.array:
         raise ValueError("image must be a 2D array")
 
     image = image - np.mean(image)
-    autocorrelation = signal.correlate2d(image, image)
+    autocorrelation = signal.correlate2d(image, image, mode="same")
 
     if np.max(autocorrelation) == 0:
         raise ValueError("max value of autocorrelation is equal to 0")

@@ -5,8 +5,10 @@ import pickle
 import numpy as np
 import pySAM
 from pySAM.cold_pool.composite import instant_mean_extraction_data_over_extreme
+from pySAM.cold_pool.condensation_rate import get_condensation_rate
 from pySAM.cold_pool.geometry_profile import geometry_profile
 from pySAM.cold_pool.potential_energy import potential_energy
+from pySAM.cold_pool.relative_humidity import get_qsatt
 from pySAM.utils import make_parallel
 
 
@@ -58,6 +60,8 @@ class ColdPool:
         humidity_evp: np.array,
         humidity_evp_2d: np.array = None,
         humidity_evp_2d_i: np.array = None,
+        rho: np.array = None,
+        int_cloud_base: np.array = None,
         plot_mode: bool = False,  # plot_mode=True to partially load dataset and earn time,
     ):
 
@@ -75,6 +79,8 @@ class ColdPool:
         self.QPEVP = humidity_evp
         self.QPEVP_2D = humidity_evp_2d
         self.QPEVPi = humidity_evp_2d_i
+        self.RHO = rho
+        self.IntQN = int_cloud_base
 
         self.nx = len(self.X)
         self.ny = len(self.Y)
@@ -181,6 +187,17 @@ class ColdPool:
             self.W.values, self.X, axis=3
         )
 
+        self.QSATT = get_qsatt(self.P.values[: self.nz], self.TABS.values)
+
+        self.RH = self.QV / self.QSATT
+
+        self.CR = get_condensation_rate(
+            vertical_velocity=self.W.values,
+            density=self.RHO.values,
+            z_array=self.Z.values,
+            humidity=self.QV.values,
+        )
+
     def set_composite_variables(
         self,
         data_name: str,
@@ -211,12 +228,17 @@ class ColdPool:
             "QPEVPi",
             "QP",
             "rho_QPEVP",
+            "RH",
+            "U",
+            "QV",
         ]:
             raise ValueError(
-                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi, QP, rho_QPEVP]"
+                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi, QP, rho_QPEVP, RH, U, QV]"
             )
-        if variable_to_look_for_extreme not in ["PRECi", "QPEVP_2D"]:
-            raise ValueError("variable_to_look_for_extreme must be in [PRECi, QPEVP_2D]")
+        if variable_to_look_for_extreme not in ["PRECi", "QPEVP_2D", "Prec", "CR", "IntQN"]:
+            raise ValueError(
+                "variable_to_look_for_extreme must be in [PRECi, QPEVP_2D, Prec, CR, IntQN]"
+            )
 
         if parallelize:
             parallel_composite = make_parallel(
@@ -248,7 +270,9 @@ class ColdPool:
         composite_variable = np.array(composite_variable)
         composite_variable = np.mean(composite_variable, axis=0)
 
-        setattr(self, data_name + "_composite", composite_variable)
+        setattr(
+            self, data_name + "_composite_" + variable_to_look_for_extreme, composite_variable
+        )
 
     def set_geometry_profile(
         self,

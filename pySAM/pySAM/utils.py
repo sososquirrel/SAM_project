@@ -121,15 +121,15 @@ def expand_array_to_tzyx_array(
 
         output_array = input_array[None, :, None, None]
 
-        output_array.repeat(final_shape[0], axis=0)
-        output_array.repeat(final_shape[2], axis=2)
-        output_array.repeat(final_shape[3], axis=3)
+        output_array = np.repeat(output_array, final_shape[0], axis=0)
+        output_array = np.repeat(output_array, final_shape[2], axis=2)
+        output_array = np.repeat(output_array, final_shape[3], axis=3)
 
     else:
         if len(input_array.shape) != 2:
             raise ValueError("Input array with time dependence must be 2-dimensionnal")
 
-        if (input_array.shape != final_shape[:2]).all():
+        if input_array.shape != tuple(final_shape[:2]):
             raise ValueError(
                 "time and z lengths of final shape must be equal to the length of input array"
             )
@@ -172,7 +172,7 @@ def color2(velocity: str):
     if velocity == "0":
         return "grey"
 
-    cmap = plt.cm.get_cmap("plasma")
+    cmap = plt.cm.get_cmap("Spectral_r")
     return cmap(float(velocity) / 20)
 
 
@@ -188,18 +188,32 @@ def generate_1d_2d_3d_paths(run: str, velocity: str, depth_shear: str, data_fold
     Returns:
         TYPE: List of 3 paths [path_field_1d, path_field_2d, path_field_3d]
     """
-    path_field_1d = (
-        data_folder_path + f"{run}/1D_FILES/RCE_shear_U{velocity}_H{depth_shear}_{run}.nc"
-    )
-    path_field_2d = (
-        data_folder_path
-        + f"/{run}/2D_FILES/RCE_shear_U{velocity}_H{depth_shear}_64.2Dcom_1_{run}.nc"
-    )
 
-    path_field_3d = (
-        data_folder_path
-        + f"{run}/3D_FILES/RCE_shear_U{velocity}_H{depth_shear}_64_0000302400.com3D.alltimes_{run}.nc"
-    )
+    if depth_shear == "inf":
+        path_field_1d = data_folder_path + f"{run}/1D_FILES/RCE_shear_U{velocity}_{run}.nc"
+        path_field_2d = (
+            data_folder_path + f"/{run}/2D_FILES/RCE_shear_U{velocity}_64.2Dcom_1_{run}.nc"
+        )
+
+        path_field_3d = (
+            data_folder_path
+            + f"{run}/3D_FILES/RCE_shear_U{velocity}_64_0000302400.com3D.alltimes_{run}.nc"
+        )
+
+    else:
+
+        path_field_1d = (
+            data_folder_path + f"{run}/1D_FILES/RCE_shear_U{velocity}_H{depth_shear}_{run}.nc"
+        )
+        path_field_2d = (
+            data_folder_path
+            + f"/{run}/2D_FILES/RCE_shear_U{velocity}_H{depth_shear}_64.2Dcom_1_{run}.nc"
+        )
+
+        path_field_3d = (
+            data_folder_path
+            + f"{run}/3D_FILES/RCE_shear_U{velocity}_H{depth_shear}_64_0000302400.com3D.alltimes_{run}.nc"
+        )
 
     return path_field_1d, path_field_2d, path_field_3d
 

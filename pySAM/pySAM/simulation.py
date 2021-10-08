@@ -60,13 +60,22 @@ class Simulation:
 
         if not hasattr(self.dataset_3d, "QPEVP"):
 
-            self.add_variable_to_dataset(
-                dataset_name="dataset_3d",
-                variable_name="QPEVP",
-                variable_data_path="/Users/sophieabramian/Desktop/SAM_project/data/"
-                + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}"
-                + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
-            )
+            if self.velocity == "0":
+                self.add_variable_to_dataset(
+                    dataset_name="dataset_3d",
+                    variable_name="QPEVP",
+                    variable_data_path="/Users/sophieabramian/Desktop/SAM_project/data/"
+                    + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}"
+                    + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
+                )
+            else:
+                self.add_variable_to_dataset(
+                    dataset_name="dataset_3d",
+                    variable_name="QPEVP",
+                    variable_data_path="/Users/sophieabramian/Desktop/SAM_project/data/"
+                    + f"squall4/3D_FILES/QPEVP/RCE_shear_U{self.velocity}_H{self.depth_shear}"
+                    + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
+                )
 
         # self.dataset_1d.close()
         # self.dataset_2d.close()
@@ -97,6 +106,8 @@ class Simulation:
             pressure=self.dataset_1d.p,
             depth_shear=self.depth_shear,
             humidity_evp=self.dataset_3d.QPEVP,
+            rho=self.dataset_1d.RHO,
+            int_cloud_base=self.dataset_2d.IntQN,
             plot_mode=plot_mode,
         )
 
@@ -120,11 +131,20 @@ class Simulation:
         Args:
             backup_folder_path (str): path to saved file
         """
-        file = open(
-            backup_folder_path
-            + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
-            "rb",
-        )
+
+        if self.velocity == "0":
+
+            file = open(
+                backup_folder_path + f"{self.run}/simulation/saved_simulation_U{self.velocity}",
+                "rb",
+            )
+        else:
+            file = open(
+                backup_folder_path
+                + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
+                "rb",
+            )
+
         tmp_dict = pickle.load(file)
         file.close()
         self.__dict__.update(tmp_dict)
@@ -158,11 +178,20 @@ class Simulation:
             for (key, value) in self.__dict__.items()
             if key not in your_blacklisted_set
         ]
-        file = open(
-            backup_folder_path
-            + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
-            "wb",
-        )
+
+        if self.velocity == "0":
+
+            file = open(
+                backup_folder_path + f"{self.run}/simulation/saved_simulation_U{self.velocity}",
+                "wb",
+            )
+
+        else:
+            file = open(
+                backup_folder_path
+                + f"{self.run}/simulation/saved_simulation_U{self.velocity}_H{self.depth_shear}",
+                "wb",
+            )
         pickle.dump(dict2, file, 2)
         file.close()
 
