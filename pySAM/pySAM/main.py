@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     simulation_run = "squall4"
 
-    for velocity in ["2.5", "5", "7.5", "10", "12.5", "15", "17.5", "20"]:
+    for velocity in ["2.5", "5", "7.5", "12.5", "15", "17.5", "20"]:
         print(velocity)
 
         DATA_FOLDER_PATHS = generate_1d_2d_3d_paths(
@@ -32,15 +32,13 @@ if __name__ == "__main__":
             depth_shear="1000",
         )
 
-        simulation.load(BACKUP_FOLDER_PATH)
+        # simulation.load(BACKUP_FOLDER_PATH)
 
-        """
         print("calcul of max variance")
 
         simulation.squall_line.set_maximum_variance_step(data_name="PW")
 
         print("calcul of angle distribution")
-        """
 
         simulation.squall_line.set_distribution_angles(
             data_name="PW",
@@ -49,10 +47,6 @@ if __name__ == "__main__":
             sigma=pySAM.SIGMA_GAUSSIAN,
             parallelize=True,
         )
-
-        simulation.save(BACKUP_FOLDER_PATH)
-
-        """
 
         print("calcul of composite variable")
 
@@ -68,16 +62,15 @@ if __name__ == "__main__":
                 parallelize=True,
             )
 
+        print("calcul of profil")
+        simulation.cold_pool.set_geometry_profile(
+            data_name="BUOYANCY_composite_PRECi", threshold=-0.015
+        )
+
         print("calcul of set_potential_energy")
 
         simulation.cold_pool.set_potential_energy(
-            data_name="BUOYANCY_composite", profile_name="profile_15"
-        )
-
-        print("calcul of profil")
-        simulation.cold_pool.set_geometry_profile(
-            data_name="BUOYANCY_composite", threshold=-0.015
+            data_name="BUOYANCY_composite_PRECi", profile_name="profile_15"
         )
 
         simulation.save(BACKUP_FOLDER_PATH)
-        """

@@ -142,6 +142,26 @@ def expand_array_to_tzyx_array(
     return output_array
 
 
+def expand_array_to_zyx_array(input_array: np.array, final_shape: np.array) -> np.array:
+    """Get a (nz,ny,nx) array form a (nz) array
+    It makes data get volumic
+
+    Args:
+        time_dependence (bool): True if the data is of shape of (nt,nz), False if shape=(nz)
+        input_array (np.array): the array you want to extend
+        final_shape (np.array): dimension of your willing array, must be (nt,nz,ny,nx) in this order
+    """
+    if len(final_shape) != 3:
+        raise ValueError("Output must be (z,y,x) type")
+
+    output_array = input_array[:, None, None]
+
+    output_array = np.repeat(output_array, final_shape[1], axis=1)
+    output_array = np.repeat(output_array, final_shape[2], axis=2)
+
+    return output_array
+
+
 def color(velocity: str):
     """Returns a specific color for each simulation, very convenient for plot
 
@@ -218,6 +238,40 @@ def generate_1d_2d_3d_paths(run: str, velocity: str, depth_shear: str, data_fold
     return path_field_1d, path_field_2d, path_field_3d
 
 
+def max_point_wise(matrix_1: np.array, matrix_2: np.array):
+    """Summary
+
+    Args:
+        matrix_1 (np.array): first matrix
+        matrix_2 (np.array): second matrix
+
+    Returns:
+        TYPE: Description
+    """
+    matrix_output = np.copy(matrix_1)
+
+    matrix_output[matrix_2 - matrix_1 > 0] = matrix_2[matrix_2 - matrix_1 > 0]
+
+    return matrix_output
+
+
+def min_point_wise(matrix_1: np.array, matrix_2: np.array):
+    """Summary
+
+    Args:
+        matrix_1 (np.array): first matrix
+        matrix_2 (np.array): second matrix
+
+    Returns:
+        TYPE: Description
+    """
+    matrix_output = np.copy(matrix_1)
+
+    matrix_output[matrix_2 - matrix_1 < 0] = matrix_2[matrix_2 - matrix_1 < 0]
+
+    return matrix_output
+
+
 def create_reduced_nb_timestep_netcdf4_for_test(
     input_netcdf4_file: str, output_name: str
 ):  # pragma: no cover
@@ -230,3 +284,30 @@ def create_reduced_nb_timestep_netcdf4_for_test(
     data = xr.open_dataset(input_netcdf4_file, decode_cf=False)
     dataset_out = data.loc[dict(time=[30.0, 30.04167, 30.08333])]
     dataset_out.to_netcdf(output_name)
+
+
+def get_integrated_quantity(density: np.array, z_array: np.array, quantity: np.array):
+
+    if quantity.shape[0] != density.shape[0]:
+        nt = quantity.shape[0]
+        nt_long = density.shape[0]
+        density = density[nt_long - nt :, :]
+
+    if z_array.shape[0] != density.shape[1]:
+        nz = z_array.shape[0]
+        density = density[:, :nz]
+
+    rho = density
+    rho_3D = np.tile(rho, (128, 128, 1, 1))
+    rho_3D = rho_3D.T
+    rho_3D = np.swapaxes(rho_3D, 0, 1)
+
+    product_rho_qpsrc = quantity * rho_3D
+
+    dz = np.gradient(z_array.T)
+    dz_3D = np.tile(dz, (121, 128, 128, 1))
+    dz_3D = np.swapaxes(dz_3D, 1, 3)
+
+    integrated_quantity = np.sum(product_rho_qpsrc * dz_3D, axis=1)
+
+    return integrated_quantity

@@ -2,10 +2,15 @@
 
 import pickle
 
+import numpy as np
+import pySAM
 import xarray as xr
+from pySAM import config
+from pySAM.cape.cape_functions import get_parcel_ascent
 from pySAM.cold_pool.cold_pool import ColdPool
+from pySAM.cold_pool.composite import instant_mean_extraction_data_over_extreme
 from pySAM.squall_line.squall_line import SquallLine
-from pySAM.utils import color, color2
+from pySAM.utils import color, color2, make_parallel
 
 
 class Simulation:
@@ -95,7 +100,7 @@ class Simulation:
 
         self.cold_pool = ColdPool(
             absolute_temperature=self.dataset_3d.TABS,
-            instantaneous_precipitation=self.dataset_2d.PRECi,
+            precipitation=self.dataset_2d.Prec,
             x_positions=self.dataset_3d.x,
             y_positions=self.dataset_3d.y,
             z_positions=self.dataset_3d.z,
@@ -107,7 +112,7 @@ class Simulation:
             depth_shear=self.depth_shear,
             humidity_evp=self.dataset_3d.QPEVP,
             rho=self.dataset_1d.RHO,
-            int_cloud_base=self.dataset_2d.IntQN,
+            precip_source=self.dataset_2d.QPSRC,
             plot_mode=plot_mode,
         )
 
@@ -147,6 +152,7 @@ class Simulation:
 
         tmp_dict = pickle.load(file)
         file.close()
+
         self.__dict__.update(tmp_dict)
 
         self.squall_line.load(
@@ -199,7 +205,106 @@ class Simulation:
             backup_folder_path
             + f"{self.run}/squall_line/saved_squall_line_U{self.velocity}_H{self.depth_shear}"
         )
+
         self.cold_pool.save(
             backup_folder_path
             + f"{self.run}/cold_pool/saved_cold_pool_U{self.velocity}_H{self.depth_shear}"
+        )
+
+    def get_all_parcel_ascent_profiles(
+        self,
+        temperature: str = "TABS",
+        vertical_array: str = "z",
+        pressure: str = "p",
+        humidity_ground: str = "QV",
+        parallelize: bool = True,
+    ) -> np.array:
+
+        if parallelize:
+            parallel_parcel_ascent = make_parallel(
+                function=get_parcel_ascent, nprocesses=config.N_CPU
+            )
+            parcel_ascent = parallel_parcel_ascent(
+                iterable_values_1=getattr(self.dataset_3d, temperature).values,
+                iterable_values_2=getattr(self.dataset_3d, humidity_ground).values[:, 0, :, :]
+                / 1000,
+                pressure=getattr(self.dataset_1d, pressure).values[:53],
+                vertical_array=getattr(self.dataset_3d, vertical_array).values,
+            )
+
+            setattr(self, "parcel_ascent_3d", np.array(parcel_ascent))
+
+        else:
+            parcel_ascent = []
+
+            for temperature_i, humidity_ground_i in zip(
+                getattr(self.dataset_3d, temperature).values,
+                getattr(self.dataset_3d, humidity_ground).values[:, 0, :, :] / 1000,
+            ):
+
+                T_parcel_i = get_parcel_ascent(
+                    temperature=temperature_i,
+                    humidity_ground=humidity_ground_i,
+                    pressure=getattr(self.dataset_1d, pressure).values[:53],
+                    vertical_array=getattr(self.dataset_3d, vertical_array).values,
+                )
+
+                parcel_ascent.append(T_parcel_i)
+
+            parcel_ascent = np.array(parcel_ascent)
+            setattr(self, "parcel_ascent_3d", parcel_ascent)
+
+    def set_composite_variables(
+        self,
+        data_name: str,
+        variable_to_look_for_extreme: str,
+        extreme_events_choice: str,
+        x_margin: int,
+        y_margin: int,
+        parallelize: bool = True,
+    ) -> np.array:
+        """Compute the composite, namely the mean over extreme events, of 2d or 3d variables evolving in time
+        This method build attribute
+
+        Args:
+            data_name (str): name of the variable composite method is applying to
+            variable_to_look_for_extreme (str): name of the variable that describe extreme event
+            extreme_events_choice (str): max 1-percentile or 10-percentile
+            x_margin (int): width of window zoom
+            y_margin (int, optional): depth of window zoom
+            parallelize (bool, optional): use all your cpu power
+        """
+
+        if parallelize:
+            parallel_composite = make_parallel(
+                function=instant_mean_extraction_data_over_extreme, nprocesses=pySAM.N_CPU
+            )
+            composite_variable = parallel_composite(
+                iterable_values_1=getattr(self, data_name),
+                iterable_values_2=getattr(self, variable_to_look_for_extreme),
+                extreme_events_choice=extreme_events_choice,
+                x_margin=x_margin,
+                y_margin=y_margin,
+            )
+
+        else:  # NO PARALLELIZATION
+            composite_variable = []
+            data = getattr(self, data_name)
+            variable_to_look_for_extreme = getattr(self, variable_to_look_for_extreme).values
+            for image, variable_extreme in zip(data, variable_to_look_for_extreme):
+                composite_variable.append(
+                    instant_mean_extraction_data_over_extreme(
+                        data=image,
+                        variable_to_look_for_extreme=variable_extreme,
+                        extreme_events_choice=extreme_events_choice,
+                        x_margin=x_margin,
+                        y_margin=y_margin,
+                    )
+                )
+
+        composite_variable = np.array(composite_variable)
+        composite_variable = np.mean(composite_variable, axis=0)
+
+        setattr(
+            self, data_name + "_composite_" + variable_to_look_for_extreme, composite_variable
         )

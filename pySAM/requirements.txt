@@ -4,34 +4,104 @@
 #
 #    pip-compile requirements.in
 #
-attrs==20.3.0             # via pytest
+altair==4.1.0             # via streamlit
+appnope==0.1.2            # via ipykernel, ipython
+argon2-cffi==21.1.0       # via notebook
+astor==0.8.1              # via streamlit
+attrs==20.3.0             # via jsonschema, pytest, streamlit
+backcall==0.2.0           # via ipython
+backports.zoneinfo==0.2.1  # via tzlocal
+base58==2.1.0             # via streamlit
+bleach==4.1.0             # via nbconvert
+blinker==1.4              # via streamlit
+cachetools==4.2.4         # via streamlit
+certifi==2021.5.30        # via requests
+cffi==1.14.6              # via argon2-cffi
 cftime==1.4.1             # via netcdf4
+charset-normalizer==2.0.6  # via requests
+click==7.1.2              # via streamlit
 coverage==5.3             # via pytest-cov
 cycler==0.10.0            # via matplotlib
+debugpy==1.5.0            # via ipykernel
+decorator==5.1.0          # via ipython, validators
+defusedxml==0.7.1         # via nbconvert
 dill==0.3.3               # via multiprocess
+entrypoints==0.3          # via altair, jupyter-client, nbconvert
 flake8==3.8.4             # via -r requirements.in
+gitdb==4.0.7              # via gitpython
+gitpython==3.1.24         # via streamlit
+idna==3.2                 # via requests
 iniconfig==1.1.1          # via pytest
+ipykernel==6.4.1          # via ipywidgets, notebook, pydeck
+ipython-genutils==0.2.0   # via ipykernel, ipywidgets, nbformat, notebook
+ipython==7.28.0           # via ipykernel, ipywidgets
+ipywidgets==7.6.5         # via pydeck
+jedi==0.18.0              # via ipython
+jinja2==3.0.2             # via altair, nbconvert, notebook, pydeck
+jsonschema==4.0.1         # via altair, nbformat
+jupyter-client==7.0.6     # via ipykernel, nbclient, notebook
+jupyter-core==4.8.1       # via jupyter-client, nbconvert, nbformat, notebook
+jupyterlab-pygments==0.1.2  # via nbconvert
+jupyterlab-widgets==1.0.2  # via ipywidgets
 kiwisolver==1.3.1         # via matplotlib
+markupsafe==2.0.1         # via jinja2
+matplotlib-inline==0.1.3  # via ipykernel, ipython
 matplotlib==3.3.3         # via -r requirements.in
 mccabe==0.6.1             # via flake8
+mistune==0.8.4            # via nbconvert
 multiprocess==0.70.11.1   # via -r requirements.in
+nbclient==0.5.4           # via nbconvert
+nbconvert==6.2.0          # via notebook
+nbformat==5.1.3           # via ipywidgets, nbclient, nbconvert, notebook
+nest-asyncio==1.5.1       # via jupyter-client, nbclient
 netcdf4==1.5.5.1          # via -r requirements.in
-numpy==1.19.4             # via -r requirements.in, cftime, matplotlib, netcdf4, pandas, scipy, xarray
-packaging==20.8           # via pytest
-pandas==1.1.5             # via -r requirements.in, xarray
-pillow==8.0.1             # via matplotlib
+notebook==6.4.4           # via widgetsnbextension
+numpy==1.19.4             # via -r requirements.in, altair, cftime, matplotlib, netcdf4, pandas, pyarrow, pydeck, scipy, streamlit, xarray
+packaging==20.8           # via bleach, pytest, streamlit
+pandas==1.1.5             # via -r requirements.in, altair, streamlit, xarray
+pandocfilters==1.5.0      # via nbconvert
+parso==0.8.2              # via jedi
+pexpect==4.8.0            # via ipython
+pickleshare==0.7.5        # via ipython
+pillow==8.0.1             # via matplotlib, streamlit
 pluggy==0.13.1            # via pytest
+prometheus-client==0.11.0  # via notebook
+prompt-toolkit==3.0.20    # via ipython
+protobuf==3.18.1          # via streamlit
+ptyprocess==0.7.0         # via pexpect, terminado
 py==1.10.0                # via pytest
+pyarrow==5.0.0            # via streamlit
 pycodestyle==2.6.0        # via flake8
+pycparser==2.20           # via cffi
+pydeck==0.7.0             # via streamlit
 pyflakes==2.2.0           # via flake8
+pygments==2.10.0          # via ipython, jupyterlab-pygments, nbconvert
 pyparsing==2.4.7          # via matplotlib, packaging
+pyrsistent==0.18.0        # via jsonschema
 pytest-cov==2.10.1        # via -r requirements.in
 pytest==6.2.1             # via -r requirements.in, pytest-cov
-python-dateutil==2.8.1    # via matplotlib, pandas
+python-dateutil==2.8.1    # via jupyter-client, matplotlib, pandas, streamlit
 pytz==2020.4              # via pandas
+pyzmq==22.3.0             # via jupyter-client, notebook
+requests==2.26.0          # via streamlit
 scipy==1.5.4              # via -r requirements.in
-six==1.15.0               # via cycler, python-dateutil
-toml==0.10.2              # via pytest
+send2trash==1.8.0         # via notebook
+six==1.15.0               # via bleach, cycler, python-dateutil, validators
+smmap==4.0.0              # via gitdb
+streamlit==1.0.0          # via -r requirements.in
+terminado==0.12.1         # via notebook
+testpath==0.5.0           # via nbconvert
+toml==0.10.2              # via pytest, streamlit
+toolz==0.11.1             # via altair
+tornado==6.1              # via ipykernel, jupyter-client, notebook, streamlit, terminado
+traitlets==5.1.0          # via ipykernel, ipython, ipywidgets, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbconvert, nbformat, notebook, pydeck
+typing-extensions==3.10.0.2  # via gitpython
+tzlocal==3.0              # via streamlit
+urllib3==1.26.7           # via requests
+validators==0.18.2        # via streamlit
+wcwidth==0.2.5            # via prompt-toolkit
+webencodings==0.5.1       # via bleach
+widgetsnbextension==3.5.1  # via ipywidgets
 xarray==0.16.2            # via -r requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:

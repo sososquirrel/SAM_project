@@ -38,5 +38,21 @@ SIGMA_GAUSSIAN = np.array([[1.0, -0.985], [-0.985, 1.0]])
 
 LOWEST_ATMOSPHERIC_LEVEL = 37.5  # m
 
+# convert celsius to kelvin and reciprocally
 
+ABSOLUTE_ZERO = -273  # K
+
+# Initial guess for level of lifted condensation
+
+INITIAL_Z = 700  # m
+
+INITIAL_Z_2D = INITIAL_Z * np.ones((128, 128))  # m
+
+
+# LATENT HEAT OF CONDENSATION
+L_c = 2.5104 * 10 ** 6  # J/kg
+
+
+# LATENT HEAT OF SUBLIMATION
+L_s = 2.8440 * 10 ** 6  # J/kg
 #

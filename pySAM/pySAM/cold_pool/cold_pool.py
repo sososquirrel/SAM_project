@@ -47,7 +47,7 @@ class ColdPool:
     def __init__(
         self,
         absolute_temperature: np.array,
-        instantaneous_precipitation: np.array,
+        precipitation: np.array,
         x_positions: np.array,
         y_positions: np.array,
         z_positions: np.array,
@@ -61,13 +61,13 @@ class ColdPool:
         humidity_evp_2d: np.array = None,
         humidity_evp_2d_i: np.array = None,
         rho: np.array = None,
-        int_cloud_base: np.array = None,
+        precip_source: np.array = None,
         plot_mode: bool = False,  # plot_mode=True to partially load dataset and earn time,
     ):
 
         self.depth_shear = depth_shear
         self.TABS = absolute_temperature
-        self.PRECi = instantaneous_precipitation
+        self.Prec = precipitation
         self.X = x_positions
         self.Y = y_positions
         self.Z = z_positions
@@ -80,7 +80,7 @@ class ColdPool:
         self.QPEVP_2D = humidity_evp_2d
         self.QPEVPi = humidity_evp_2d_i
         self.RHO = rho
-        self.IntQN = int_cloud_base
+        self.QPSRC = precip_source
 
         self.nx = len(self.X)
         self.ny = len(self.Y)
@@ -98,14 +98,15 @@ class ColdPool:
     def save(self, path_to_save: str):
         """Will save the class as a pickle but will ignore attributes wwritten in UPPERCASE
             Those ones are loaded directly from dataset, so no need to store them in pickle
-
         Args:
             path_to_save (str): path and name of the backup
         """
 
         # SELECT ONLY attributes whose names are in lower cases
         black_list = [
-            key for (key, value) in self.__dict__.items() if (key.isupper() or key == "PRECi")
+            key
+            for (key, value) in self.__dict__.items()
+            if (key.isupper() or key in ["PRECi", "IntQN", "Prec"])
         ]
 
         dictionary = {
@@ -118,7 +119,6 @@ class ColdPool:
 
     def load(self, path_to_load: str):
         """Load cold pool from pickle file
-
         Args:
             path_to_load (str): path of loaded file
         """
@@ -194,7 +194,6 @@ class ColdPool:
         self.CR = get_condensation_rate(
             vertical_velocity=self.W.values,
             density=self.RHO.values,
-            z_array=self.Z.values,
             humidity=self.QV.values,
         )
 
@@ -231,13 +230,22 @@ class ColdPool:
             "RH",
             "U",
             "QV",
+            "TABS",
+            "CR",
         ]:
             raise ValueError(
-                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi, QP, rho_QPEVP, RH, U, QV]"
+                "data name must be in [W, QN, VORTICITY, BUOYANCY, QPEVP, QPEVP_2D, QPEVPi, QP, rho_QPEVP, RH, U, QV, TABS]"
             )
-        if variable_to_look_for_extreme not in ["PRECi", "QPEVP_2D", "Prec", "CR", "IntQN"]:
+        if variable_to_look_for_extreme not in [
+            "PRECi",
+            "QPEVP_2D",
+            "Prec",
+            "CR",
+            "IntQN",
+            "QPSRC",
+        ]:
             raise ValueError(
-                "variable_to_look_for_extreme must be in [PRECi, QPEVP_2D, Prec, CR, IntQN]"
+                "variable_to_look_for_extreme must be in [PRECi, QPEVP_2D, Prec, CR, IntQN, QPSRC]"
             )
 
         if parallelize:

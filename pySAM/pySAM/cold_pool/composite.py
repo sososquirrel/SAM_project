@@ -87,12 +87,16 @@ def extreme_index(
     if extreme_events_choice not in [
         "max",
         "1-percentile",
+        "0.1-percentile",
+        "0.01-percentile",
         "10-percentile",
         "min",
         "99-percentile",
         "90-percentile",
     ]:
-        raise ValueError("extreme_events_choice must be in [max,1-percentile,10-percentile]")
+        raise ValueError(
+            "extreme_events_choice must be in [max,0.1-percentile,0.01-percentile, 1-percentile,10-percentile]"
+        )
 
     if extreme_events_choice == "max":
         index_middle_array = np.where(
@@ -106,6 +110,12 @@ def extreme_index(
 
     else:
         if extreme_events_choice == "1-percentile":
+            percentile_value = 1
+
+        if extreme_events_choice == "0.1-percentile":
+            percentile_value = 1
+
+        if extreme_events_choice == "0.01-percentile":
             percentile_value = 1
 
         if extreme_events_choice == "10-percentile":
