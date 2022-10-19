@@ -6,14 +6,14 @@ from pySAM.utils import generate_1d_2d_3d_paths
 if __name__ == "__main__":
 
     # data folder
-    DATA_FOLDER_PATH = "/Users/sophieabramian/Desktop/SAM_project/data/"
-    # DATA_FOLDER_PATH = "/Volumes/LaCie/"
+    # DATA_FOLDER_PATH = "/Users/sophieabramian/Desktop/SAM_project/data/"
+    DATA_FOLDER_PATH = "/Volumes/LaCie/"
 
     BACKUP_FOLDER_PATH = (
         "/Users/sophieabramian/Desktop/SAM_project/simulation_instances_backup/"
     )
 
-    simulation_run = "squall4"
+    simulation_run = "squall_extreme"
 
     for velocity in ["2.5", "5", "7.5", "12.5", "15", "17.5", "20"]:
         print(velocity)
@@ -32,8 +32,9 @@ if __name__ == "__main__":
             depth_shear="1000",
         )
 
-        # simulation.load(BACKUP_FOLDER_PATH)
+        simulation.load(BACKUP_FOLDER_PATH)
 
+        """
         print("calcul of max variance")
 
         simulation.squall_line.set_maximum_variance_step(data_name="PW")
@@ -72,5 +73,5 @@ if __name__ == "__main__":
         simulation.cold_pool.set_potential_energy(
             data_name="BUOYANCY_composite_PRECi", profile_name="profile_15"
         )
-
+        """
         simulation.save(BACKUP_FOLDER_PATH)

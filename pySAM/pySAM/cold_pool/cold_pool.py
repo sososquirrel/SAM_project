@@ -57,7 +57,7 @@ class ColdPool:
         humidity: np.array,
         pressure: np.array,
         depth_shear: str,
-        humidity_evp: np.array,
+        humidity_evp: np.array = None,
         humidity_evp_2d: np.array = None,
         humidity_evp_2d_i: np.array = None,
         rho: np.array = None,
@@ -197,6 +197,14 @@ class ColdPool:
             humidity=self.QV.values,
         )
 
+    def set_CR_3D(self):
+        self.CR_3D = get_condensation_rate(
+            vertical_velocity=self.W.values,
+            density=self.RHO.values,
+            humidity=self.QV.values,
+            return_3D=True,
+        )
+
     def set_composite_variables(
         self,
         data_name: str,
@@ -205,6 +213,7 @@ class ColdPool:
         x_margin: int,
         y_margin: int,
         parallelize: bool = True,
+        return_3D: bool = False,
     ) -> np.array:
         """Compute the composite, namely the mean over extreme events, of 2d or 3d variables evolving in time
         This method build attribute
@@ -217,6 +226,7 @@ class ColdPool:
             y_margin (int, optional): depth of window zoom
             parallelize (bool, optional): use all your cpu power
         """
+
         if data_name not in [
             "W",
             "QN",
@@ -258,6 +268,7 @@ class ColdPool:
                 extreme_events_choice=extreme_events_choice,
                 x_margin=x_margin,
                 y_margin=y_margin,
+                return_3D=return_3D,
             )
 
         else:  # NO PARALLELIZATION
@@ -272,15 +283,25 @@ class ColdPool:
                         extreme_events_choice=extreme_events_choice,
                         x_margin=x_margin,
                         y_margin=y_margin,
+                        return_3D=return_3D,
                     )
                 )
 
         composite_variable = np.array(composite_variable)
         composite_variable = np.mean(composite_variable, axis=0)
 
-        setattr(
-            self, data_name + "_composite_" + variable_to_look_for_extreme, composite_variable
-        )
+        if return_3D:
+            setattr(
+                self,
+                data_name + "_composite_" + variable_to_look_for_extreme + "3D",
+                composite_variable,
+            )
+        else:
+            setattr(
+                self,
+                data_name + "_composite_" + variable_to_look_for_extreme + "3D",
+                composite_variable,
+            )
 
     def set_geometry_profile(
         self,

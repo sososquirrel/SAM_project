@@ -26,15 +26,16 @@ def expand_three_time_larger(data: np.array):
 def clip_to_domain(
     x0: float, y0: float, x_left: float, x_right: float, y_bottom: float, y_top: float
 ):
-    """This function takes into account the doubly periodicity of the domain and for given coordonate couple returns the value in the domain
+    """This function takes into account the doubly periodicity of the domain and for given
+    coordonate couple returns the value in the domain
 
     Args:
-        x0 (float): Description
-        y0 (float): Description
-        x_left (float): Description
-        x_right (float): Description
-        y_bottom (float): Description
-        y_top (float): Description
+        x0 (float): input x
+        y0 (float): input y
+        x_left (float): largest value of the domain in x
+        x_right (float): lowest value of the domain in x
+        y_bottom (float): largest value of the domain in y
+        y_top (float): lowest value of the domain in y
     """
     done = False
     while done == False:
@@ -54,31 +55,31 @@ def clip_to_domain(
 
 
 def indxs(p: np.array, x: np.array, y: np.array):
-    """Summary
+    """returns interpolated coordinate of a point in grid
 
     Args:
-        p (np.array): Description
-        x (np.array): Description
-        y (np.array): Description
+        p (np.array): input point
+        x (np.array): grid of x
+        y (np.array): grid of y
 
     Returns:
-        TYPE: Description
+        TYPE: couple of integers
     """
     i = np.int(x.shape[1] * (p[0] - x[0, 0]) / (x[0, -1] - x[0, 0]))
     j = np.int(y.shape[0] * (p[1] - y[0, 0]) / (y[-1, 0] - y[0, 0]))
     return i, j
 
 
-def vitesse_field_formating(vector_field_u: np.array, vector_field_v: np.array, n_iter: int):
-    """Summary
+def vitesse_field_formating(vector_field_u: np.array, vector_field_v: np.array):
+    """This function expands a velocity field in a larger domain, using
+    again to avoid boundary problem for the interpolation
 
     Args:
-        vector_field_u (np.array): Description
-        vector_field_v (np.array): Description
-        n_iter (int): Description
+        vector_field_u (np.array): velocity field component along x axis
+        vector_field_v (np.array): velocity field component along y axis
 
     Returns:
-        TYPE: Description
+        TYPE: the velocity field expand to the larger domain
     """
     V = np.zeros_like(np.array([vector_field_u, vector_field_v]))
     V = np.swapaxes(V, 0, 1)
@@ -191,7 +192,7 @@ def VF_trajectory(
         y_top (float): Description
         y_bottom (float): Description
     """
-    V = vitesse_field_formating(vector_field_u=Vx, vector_field_v=Vy, n_iter=n_iter)
+    V = vitesse_field_formating(vector_field_u=Vx, vector_field_v=Vy)
 
     traj = np.empty((2, n_iter), dtype=float)
     traj[:, 0] = p

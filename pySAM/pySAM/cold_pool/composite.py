@@ -113,29 +113,17 @@ def extreme_index(
             percentile_value = 1
 
         if extreme_events_choice == "0.1-percentile":
-            percentile_value = 1
+            percentile_value = 0.1
 
         if extreme_events_choice == "0.01-percentile":
-            percentile_value = 1
+            percentile_value = 0.01
 
         if extreme_events_choice == "10-percentile":
             percentile_value = 10
 
-            index_middle_array = np.where(
-                variable_to_look_for_extreme
-                > np.percentile(variable_to_look_for_extreme, 100 - percentile_value)
-            )
-
-        if extreme_events_choice == "99-percentile":
-            percentile_value = 99
-
-        if extreme_events_choice == "90-percentile":
-            percentile_value = 90
-
-            index_middle_array = np.where(
-                variable_to_look_for_extreme
-                < np.percentile(variable_to_look_for_extreme, 100 - percentile_value)
-            )
+    index_middle_array = np.where(
+        variable_to_look_for_extreme > np.quantile(variable_to_look_for_extreme, 0.999)
+    )
 
     # if nb_dim_data == 2:
     #   return np.unique(index_middle_array[1])
@@ -149,6 +137,7 @@ def instant_mean_extraction_data_over_extreme(
     extreme_events_choice: str,
     x_margin: int,
     y_margin: int = None,
+    return_3D: bool = False,
 ):
     # pylint: disable=R1705
     """Summary
@@ -185,9 +174,13 @@ def instant_mean_extraction_data_over_extreme(
         )
 
         if len(instant_data_over_extreme) == 1:
-            return np.mean(instant_data_over_extreme[0], axis=1)
+            if not return_3D:
+                return np.mean(instant_data_over_extreme[0], axis=1)
+            else:
+                return instant_data_over_extreme[0]
 
         instant_data_over_extreme = np.mean(instant_data_over_extreme, axis=0)
+
         return instant_data_over_extreme
 
     else:  # len(data.shape) == 2

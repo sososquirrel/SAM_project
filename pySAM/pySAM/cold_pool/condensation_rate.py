@@ -14,6 +14,9 @@ def get_condensation_rate_2(
         z_array (np.array): Description
         humidity (np.array): Description
     """
+
+    nt, nz, ny, nx = vertical_velocity.shape
+
     if vertical_velocity.shape[0] != density.shape[0]:
         nt = vertical_velocity.shape[0]
         nt_long = density.shape[0]
@@ -26,14 +29,14 @@ def get_condensation_rate_2(
     w = vertical_velocity
 
     rho = density
-    rho_3D = np.tile(rho, (128, 128, 1, 1))
+    rho_3D = np.tile(rho, (ny, nx, 1, 1))
     rho_3D = rho_3D.T
     rho_3D = np.swapaxes(rho_3D, 0, 1)
 
     product_rho_w = w * rho_3D
 
     dz = np.gradient(z_array.T)
-    dz_3D = np.tile(dz, (121, 128, 128, 1))
+    dz_3D = np.tile(dz, (nt, ny, nx, 1))
     dz_3D = np.swapaxes(dz_3D, 1, 3)
 
     # dq = dz_3D * np.gradient(humidity, axis=0)
@@ -43,7 +46,12 @@ def get_condensation_rate_2(
     return CR
 
 
-def get_condensation_rate(vertical_velocity: np.array, density: np.array, humidity: np.array):
+def get_condensation_rate(
+    vertical_velocity: np.array, density: np.array, humidity: np.array, return_3D: bool = False
+):
+
+    nt, nz, ny, nx = vertical_velocity.shape
+
     if vertical_velocity.shape[0] != density.shape[0]:
         nt = vertical_velocity.shape[0]
         nt_long = density.shape[0]
@@ -56,17 +64,27 @@ def get_condensation_rate(vertical_velocity: np.array, density: np.array, humidi
     w = vertical_velocity
 
     rho = density
-    rho_3D = np.tile(rho, (128, 128, 1, 1))
+    rho_3D = np.tile(rho, (ny, nx, 1, 1))
     rho_3D = rho_3D.T
     rho_3D = np.swapaxes(rho_3D, 0, 1)
 
-    CR = np.sum(
-        w[:, 1:, :, :]
-        * (-np.diff(humidity, axis=1))
-        * 0.5
-        * (rho_3D[:, 1:, :, :] + rho_3D[:, :-1, :, :]),
-        axis=1,
-    )
+    if return_3D:
+        CR = (
+            w[:, 1:, :, :]
+            * (-np.diff(humidity, axis=1))
+            * 0.5
+            * (rho_3D[:, 1:, :, :] + rho_3D[:, :-1, :, :])
+        )
+
+    else:
+
+        CR = np.sum(
+            w[:, 1:, :, :]
+            * (-np.diff(humidity, axis=1))
+            * 0.5
+            * (rho_3D[:, 1:, :, :] + rho_3D[:, :-1, :, :]),
+            axis=1,
+        )
 
     return CR
 

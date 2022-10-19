@@ -42,6 +42,7 @@ def make_parallel(function, nprocesses):
             xr.core.dataarray.DataArray,
             np.ndarray,
         ]:
+            print(iterable_values_1)
             raise ValueError(
                 "Your first iterable value type is not standard, must be in [list, np.array, xarray.core.dataarray.DataArray, np.ndarray,]"
             )
@@ -311,3 +312,48 @@ def get_integrated_quantity(density: np.array, z_array: np.array, quantity: np.a
     integrated_quantity = np.sum(product_rho_qpsrc * dz_3D, axis=1)
 
     return integrated_quantity
+
+
+def distribution_tail(data: np.array, number_of_nines: int):
+    start = 0.9
+    list_of_percentile = [start]
+    for i in range(9 * number_of_nines):
+        next_value = list_of_percentile[-1] + 0.01 / (10 ** (i // 9))
+        list_of_percentile.append(next_value)
+
+    value_of_percentile = [np.quantile(data, i) for i in list_of_percentile]
+
+    list_of_percentile = np.array(list_of_percentile)
+
+    return list_of_percentile, value_of_percentile
+
+
+def mass_flux(density: np.array, vertical_velocity: np.array):
+
+    nt, nz, ny, nx = vertical_velocity.shape
+
+    # make density a 3D variable
+    if len(density.shape) == 2:
+        if density.shape[0] != nt:
+            nt_longer = density.shape[0]
+            density = density[nt_longer - nt :, :]
+
+        if density.shape[1] != nz:
+            density = density[:, :nz]
+
+        density_3D = np.tile(density, (ny, nx, 1, 1))
+        density_3D = density_3D.T
+        density_3D = np.swapaxes(density_3D, 0, 1)
+
+        # calculate the mass flux
+        ## the grid for vertical velocity and density are mismatched, explain why 0.5
+        mass_flux = (
+            vertical_velocity[:, 1:, :, :]
+            * 0.5
+            * (density_3D[:, 1:, :, :] + density_3D[:, :-1, :, :])
+        )
+
+        return mass_flux
+
+    else:
+        print("density must be rho(t,z)")

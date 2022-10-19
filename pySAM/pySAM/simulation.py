@@ -10,7 +10,7 @@ from pySAM.cape.cape_functions import get_parcel_ascent
 from pySAM.cold_pool.cold_pool import ColdPool
 from pySAM.cold_pool.composite import instant_mean_extraction_data_over_extreme
 from pySAM.squall_line.squall_line import SquallLine
-from pySAM.utils import color, color2, make_parallel
+from pySAM.utils import color, color2, distribution_tail, make_parallel, mass_flux
 
 
 class Simulation:
@@ -50,6 +50,7 @@ class Simulation:
         plot_mode: bool = False,
     ):
         """Init"""
+        # print("COUCOU SOSO ! CLASSE CETTE CLASSE !")
 
         self.run = run
         self.velocity = velocity
@@ -57,12 +58,11 @@ class Simulation:
 
         self.data_folder_paths = data_folder_paths
 
-        xr.open_dataset(self.data_folder_paths[0])
-
         self.dataset_1d = xr.open_dataset(self.data_folder_paths[0], decode_cf=False)
         self.dataset_2d = xr.open_dataset(self.data_folder_paths[1], decode_cf=False)
         self.dataset_3d = xr.open_dataset(self.data_folder_paths[2], decode_cf=False)
 
+        """
         if not hasattr(self.dataset_3d, "QPEVP"):
 
             if self.velocity == "0":
@@ -82,6 +82,7 @@ class Simulation:
                     + f"_64_0000302400.com3D.alltimes_{self.run}_QPEVP.nc",
                 )
 
+        """
         # self.dataset_1d.close()
         # self.dataset_2d.close()
         # self.dataset_3d.close()
@@ -110,7 +111,7 @@ class Simulation:
             humidity=self.dataset_3d.QV,
             pressure=self.dataset_1d.p,
             depth_shear=self.depth_shear,
-            humidity_evp=self.dataset_3d.QPEVP,
+            humidity_evp=None,
             rho=self.dataset_1d.RHO,
             precip_source=self.dataset_2d.QPSRC,
             plot_mode=plot_mode,
@@ -130,7 +131,7 @@ class Simulation:
         data_array = xr.open_dataarray(variable_data_path)
         dataset[variable_name] = data_array
 
-    def load(self, backup_folder_path):
+    def load(self, backup_folder_path, load_all: bool = True):
         """Load calculated attributes from pickle backup files
 
         Args:
@@ -152,6 +153,14 @@ class Simulation:
 
         tmp_dict = pickle.load(file)
         file.close()
+
+        your_blacklisted_set = []
+
+        if not load_all:
+
+            tmp_dict = [
+                (key, value) for (key, value) in tmp_dict if key not in your_blacklisted_set
+            ]
 
         self.__dict__.update(tmp_dict)
 
@@ -211,48 +220,90 @@ class Simulation:
             + f"{self.run}/cold_pool/saved_cold_pool_U{self.velocity}_H{self.depth_shear}"
         )
 
-    def get_all_parcel_ascent_profiles(
+    def get_cape(
         self,
         temperature: str = "TABS",
         vertical_array: str = "z",
         pressure: str = "p",
         humidity_ground: str = "QV",
         parallelize: bool = True,
+        set_parcel_ascent_composite_1d: bool = True,
     ) -> np.array:
 
+        # get the variable in np.array
+        temperature_array = getattr(self.dataset_3d, temperature).values
+
+        nt, nz, ny, nx = temperature_array.shape
+
+        z_array = getattr(self.dataset_3d, vertical_array).values
+        pressure_array = getattr(self.dataset_1d, pressure).values[:nz]
+        humidity_ground_array = getattr(self.dataset_3d, humidity_ground).values[:, 0, :, :]
+
+        # calculate parcel_ascent
         if parallelize:
             parallel_parcel_ascent = make_parallel(
                 function=get_parcel_ascent, nprocesses=config.N_CPU
             )
             parcel_ascent = parallel_parcel_ascent(
-                iterable_values_1=getattr(self.dataset_3d, temperature).values,
-                iterable_values_2=getattr(self.dataset_3d, humidity_ground).values[:, 0, :, :]
-                / 1000,
-                pressure=getattr(self.dataset_1d, pressure).values[:53],
-                vertical_array=getattr(self.dataset_3d, vertical_array).values,
+                iterable_values_1=temperature_array,
+                iterable_values_2=humidity_ground_array / 1000,
+                pressure=pressure_array,
+                vertical_array=z_array,
             )
-
-            setattr(self, "parcel_ascent_3d", np.array(parcel_ascent))
 
         else:
             parcel_ascent = []
 
             for temperature_i, humidity_ground_i in zip(
-                getattr(self.dataset_3d, temperature).values,
-                getattr(self.dataset_3d, humidity_ground).values[:, 0, :, :] / 1000,
+                temperature_array,
+                humidity_ground_array / 1000,
             ):
 
                 T_parcel_i = get_parcel_ascent(
                     temperature=temperature_i,
                     humidity_ground=humidity_ground_i,
-                    pressure=getattr(self.dataset_1d, pressure).values[:53],
-                    vertical_array=getattr(self.dataset_3d, vertical_array).values,
+                    pressure=pressure_array,
+                    vertical_array=z_array,
                 )
 
                 parcel_ascent.append(T_parcel_i)
 
-            parcel_ascent = np.array(parcel_ascent)
-            setattr(self, "parcel_ascent_3d", parcel_ascent)
+        parcel_ascent = np.array(parcel_ascent)
+
+        dz = np.gradient(z_array)
+        dz_3d = pySAM.utils.expand_array_to_tzyx_array(
+            input_array=dz, time_dependence=False, final_shape=temperature_array.shape
+        )
+
+        cape = pySAM.GRAVITY * np.sum(
+            dz_3d
+            * pySAM.utils.max_point_wise(
+                matrix_1=np.zeros_like(parcel_ascent),
+                matrix_2=((parcel_ascent - temperature_array) / temperature_array),
+            ),
+            axis=1,
+        )
+
+        setattr(self, "cape", cape)
+
+        if set_parcel_ascent_composite_1d:
+            setattr(self, "parcel_ascent", parcel_ascent)
+
+            self.set_composite_variables(
+                data_name="parcel_ascent",
+                variable_to_look_for_extreme="cape",
+                extreme_events_choice="max",
+                x_margin=40,
+                y_margin=40,
+                dataset_for_variable_2d="",
+                dataset_for_variable_3d="",
+                return_1D=True,
+            )
+
+            delattr(self, "parcel_ascent")
+
+        else:
+            None
 
     def set_composite_variables(
         self,
@@ -262,9 +313,14 @@ class Simulation:
         x_margin: int,
         y_margin: int,
         parallelize: bool = True,
+        return_3D: bool = False,
+        dataset_for_variable_2d: str = "dataset_2d",
+        dataset_for_variable_3d: str = "dataset_3d",
+        return_1D: bool = False,
     ) -> np.array:
-        """Compute the composite, namely the mean over extreme events, of 2d or 3d variables evolving in time
-        This method build attribute
+
+        """Compute the composite, namely the conditionnal mean, of 2d or 3d variables evolving in time
+        This method builds attribute
 
         Args:
             data_name (str): name of the variable composite method is applying to
@@ -275,22 +331,42 @@ class Simulation:
             parallelize (bool, optional): use all your cpu power
         """
 
+        if dataset_for_variable_3d == "":
+            data_3d = getattr(self, data_name)
+        else:
+            data_3d = getattr(getattr(self, dataset_for_variable_3d), data_name)
+
+        if dataset_for_variable_2d == "":
+            data_2d = getattr(self, variable_to_look_for_extreme)
+        else:
+            data_2d = getattr(
+                getattr(self, dataset_for_variable_2d), variable_to_look_for_extreme
+            )
+
+        if type(data_2d) == xr.core.dataarray.DataArray:
+            data_2d = data_2d.values
+
+        if type(data_3d) == xr.core.dataarray.DataArray:
+            data_3d = data_3d.values
+
         if parallelize:
+
             parallel_composite = make_parallel(
                 function=instant_mean_extraction_data_over_extreme, nprocesses=pySAM.N_CPU
             )
             composite_variable = parallel_composite(
-                iterable_values_1=getattr(self, data_name),
-                iterable_values_2=getattr(self, variable_to_look_for_extreme),
+                iterable_values_1=data_3d,
+                iterable_values_2=data_2d,
                 extreme_events_choice=extreme_events_choice,
                 x_margin=x_margin,
                 y_margin=y_margin,
+                return_3D=return_3D,
             )
 
         else:  # NO PARALLELIZATION
             composite_variable = []
-            data = getattr(self, data_name)
-            variable_to_look_for_extreme = getattr(self, variable_to_look_for_extreme).values
+            data = data_3d
+            variable_to_look_for_extreme = data_2d
             for image, variable_extreme in zip(data, variable_to_look_for_extreme):
                 composite_variable.append(
                     instant_mean_extraction_data_over_extreme(
@@ -299,12 +375,83 @@ class Simulation:
                         extreme_events_choice=extreme_events_choice,
                         x_margin=x_margin,
                         y_margin=y_margin,
+                        return_3D=return_3D,
                     )
                 )
 
         composite_variable = np.array(composite_variable)
         composite_variable = np.mean(composite_variable, axis=0)
 
+        if return_3D:
+            setattr(
+                self,
+                data_name + "_composite_" + variable_to_look_for_extreme + "_3D",
+                composite_variable,
+            )
+        else:
+            setattr(
+                self,
+                data_name + "_composite_" + variable_to_look_for_extreme,
+                composite_variable,
+            )
+        if return_1D:
+            if return_3D:
+                setattr(
+                    self,
+                    data_name + "_composite_" + variable_to_look_for_extreme + "_1D",
+                    composite_variable[:, x_margin, y_margin],
+                )
+            else:
+                setattr(
+                    self,
+                    data_name + "_composite_" + variable_to_look_for_extreme + "_1D",
+                    composite_variable[:, x_margin],
+                )
+
+    def set_distribution_tail(
+        self,
+        variable_name: str,
+        dataset_variable: str,
+        number_of_nines: int,
+        no_dataset: bool = False,
+    ):
+
+        if no_dataset:
+
+            variable = getattr(self, variable_name)
+
+        else:
+
+            variable = getattr(getattr(self, dataset_variable), variable_name)
+
+        output_list = distribution_tail(data=variable, number_of_nines=number_of_nines)
+
         setattr(
-            self, data_name + "_composite_" + variable_to_look_for_extreme, composite_variable
+            self,
+            variable_name + "_distribution_tail_" + str(number_of_nines),
+            output_list,
+        )
+
+    def set_mass_flux(self, mass_name: str, vertical_velocity_name: str):
+
+        density_variable = getattr(getattr(self, "dataset_1d"), mass_name)
+
+        vertical_velocity = getattr(getattr(self, "dataset_3d"), vertical_velocity_name)
+
+        mass_flux_3D = mass_flux(density=density_variable, vertical_velocity=vertical_velocity)
+
+        setattr(
+            self,
+            "RHO_W",
+            mass_flux_3D.values,
+        )
+
+    def set_gradient_qsat(self, humidity_name: str):
+        humidity = getattr(getattr(self, "dataset_3d"), humidity_name)
+        dqdz = -np.diff(humidity.values, axis=1)
+
+        setattr(
+            self,
+            "DQV",
+            dqdz,
         )
